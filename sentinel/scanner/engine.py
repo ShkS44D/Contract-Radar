@@ -20,6 +20,7 @@ from .facts import AnalysisFacts
 from .models import ScanResult, ScanState
 from .parser import ReportError, parse_report
 from .process import OutputLimitError, ProcessTimeout, run_process
+from .scoring import apply_score
 from .source import load_sources
 
 logger = logging.getLogger(__name__)
@@ -117,6 +118,7 @@ def scan_project(
             {(f.file, f.name, f.start, f.end) for f in facts.functions if not f.constructor}
         )
         result.state = ScanState.COMPLETED
+        apply_score(result)
     except (ProcessTimeout, LockTimeout) as exc:
         result.state = ScanState.TIMEOUT
         result.diagnostics = str(exc)
