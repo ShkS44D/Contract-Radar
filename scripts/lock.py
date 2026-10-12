@@ -18,6 +18,8 @@ def main() -> None:
             "compile",
             "pyproject.toml",
             "--strip-extras",
+            "--upgrade-package",
+            "deprecated==1.3.1",
             "--quiet",
             "--output-file",
             filename,

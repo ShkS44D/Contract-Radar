@@ -14,11 +14,23 @@ def main() -> None:
     cache_root = root / "deployment/compiler-cache"
     environment = dict(os.environ, VIRTUAL_ENV=str(cache_root))
     subprocess.run(
-        [sys.executable, "-m", "solc_select", "install", "0.8.30", "0.8.20", "0.7.6"],
+        [
+            sys.executable,
+            "-c",
+            "from solc_select.__main__ import solc_select; solc_select()",
+            "install",
+            "0.8.30",
+            "0.8.20",
+            "0.7.6",
+        ],
         env=environment,
         check=True,
         timeout=240,
     )
+
+    for version in ("0.8.30", "0.8.20", "0.7.6"):
+        binary = cache_root / ".solc-select/artifacts" / f"solc-{version}" / f"solc-{version}"
+        subprocess.run([str(binary), "--version"], check=True, timeout=10)
 
 
 if __name__ == "__main__":

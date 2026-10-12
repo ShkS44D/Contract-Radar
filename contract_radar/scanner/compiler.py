@@ -130,7 +130,13 @@ def ensure_compiler(
         if offline:
             raise CompileError(f"Compiler {version} is unavailable in offline mode")
         result = run_process(
-            [sys.executable, "-m", "solc_select", "install", version],
+            [
+                sys.executable,
+                "-c",
+                "from solc_select.__main__ import solc_select; solc_select()",
+                "install",
+                version,
+            ],
             cwd=cache,
             env=env,
             timeout=max(0.01, timeout - (time.monotonic() - started)),

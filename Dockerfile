@@ -10,7 +10,7 @@ COPY requirements.lock pyproject.toml README.md LICENSE ./
 RUN pip install --no-cache-dir -r requirements.lock
 COPY contract_radar ./contract_radar
 RUN pip install --no-cache-dir --no-deps . \
-    && python -m solc_select install 0.8.30 0.8.20 0.7.6
+    && python -c "from solc_select.__main__ import solc_select; solc_select()" install 0.8.30 0.8.20 0.7.6
 
 FROM python:3.12.10-slim-bookworm AS runtime
 ENV PATH="/opt/venv/bin:$PATH" \
