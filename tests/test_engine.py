@@ -130,6 +130,7 @@ def test_engine_success(tmp_path):
                     "success": True,
                     "results": {"detectors": []},
                     "sentinel_metadata": {"slither_version": "test"},
+                    "sentinel_facts": {"functions": [], "contracts": []},
                 }
             )
         )

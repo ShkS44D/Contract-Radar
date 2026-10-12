@@ -8,6 +8,36 @@ from .compiler import CompileError
 from .models import Confidence, Finding, Severity
 from .source import Source
 
+# Curated equivalences share one canonical rule and one scoring group.
+EQUIVALENT_RULES = {
+    "tx-origin": "SS-006",
+    "unchecked-lowlevel": "SS-008",
+    "suicidal": "SS-002",
+    "controlled-delegatecall": "SS-007",
+}
+TAXONOMY = {
+    "reentrancy-eth": ("107", "841"),
+    "reentrancy-no-eth": ("107", "841"),
+    "weak-prng": ("120", "330"),
+    "arbitrary-send-eth": ("105", "284"),
+    "divide-before-multiply": (None, "682"),
+    "timestamp": ("116", None),
+    "solc-version": ("102", None),
+}
+REMEDIATIONS = {
+    "reentrancy-eth": "Update state before external calls (checks-effects-interactions), add a reentrancy guard, and test callback attacks.",
+    "reentrancy-no-eth": "Apply checks-effects-interactions and guard external callbacks that can observe or mutate inconsistent state.",
+    "weak-prng": "Use a verifiable randomness service or a tested commit-reveal scheme; do not derive randomness from manipulable block values.",
+    "arbitrary-send-eth": "Authorize withdrawals explicitly and constrain the recipient and amount to recorded entitlements.",
+    "divide-before-multiply": "Multiply before dividing when safe, or use a full-precision mulDiv implementation with explicit rounding and overflow tests.",
+    "solc-version": "Pin a reviewed stable compiler version and check the Solidity compiler bug list for the version used to deploy.",
+    "missing-zero-check": "Reject the zero address before assigning sensitive address variables.",
+    "timestamp": "Avoid using block timestamps for randomness or exact-time authorization; tolerate validator-controlled timing variation.",
+    "naming-convention": "Use consistent Solidity naming conventions so reviewers can distinguish contracts, functions, constants, and variables.",
+    "immutable-states": "Mark constructor-only state immutable where compatible with your deployment and upgrade design.",
+    "low-level-calls": "Document why a low-level call is necessary and verify its return value, target trust, and callback safety.",
+}
+
 
 class ReportError(ValueError):
     """Malformed or incomplete engine output; never a clean scan."""
@@ -52,7 +82,7 @@ def parse_report(data: Any, sources: dict[str, Source]) -> list[Finding]:
         if not isinstance(elements, list):
             raise ReportError("Missing source elements")
         location = None
-        for element in elements:
+        for element in sorted(elements, key=lambda e: e.get("type") != "node"):
             mapping = element.get("source_mapping", {})
             name = str(mapping.get("filename_relative", "")).replace("\\", "/")
             lines = mapping.get("lines", [])
@@ -63,20 +93,33 @@ def parse_report(data: Any, sources: dict[str, Source]) -> list[Finding]:
             raise ReportError(f"No local source location for Slither rule {check}")
         name, start, end = location
         snippet, snippet_start = sources[name].context(start, end)
+        rule_id = EQUIVALENT_RULES.get(check, f"slither/{check}")
+        swc, cwe = TAXONOMY.get(check, (None, None))
+        remediation = REMEDIATIONS.get(
+            check,
+            f"Review the affected code using Slither's {check} detector guidance: https://github.com/crytic/slither/wiki/Detector-Documentation",
+        )
+        if rule_id.startswith("SS-"):
+            from .detectors import DETECTORS
+
+            custom = next(detector for detector in DETECTORS if detector.id == rule_id)
+            swc, cwe, remediation = custom.swc, custom.cwe, custom.remediation
         findings.append(
             Finding(
-                rule_id=f"slither/{check}",
+                rule_id=rule_id,
                 title=check.replace("-", " ").capitalize(),
                 severity=severity,
                 confidence=confidence,
                 description=str(detector.get("description", "")),
-                remediation=f"Review the affected code using Slither's {check} detector guidance: https://github.com/crytic/slither/wiki/Detector-Documentation",
+                remediation=remediation,
                 file=name,
                 line_start=start,
                 line_end=end,
                 snippet=snippet,
                 snippet_start=snippet_start,
                 provenance=["slither"],
+                swc=swc,
+                cwe=cwe,
             )
         )
     return findings

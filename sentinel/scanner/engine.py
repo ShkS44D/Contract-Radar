@@ -15,6 +15,8 @@ from filelock import Timeout as LockTimeout
 from sentinel.config import ScannerConfig
 
 from .compiler import CompileError, ensure_compiler, resolve_units
+from .detectors import deduplicate, run_detectors
+from .facts import AnalysisFacts
 from .models import ScanResult, ScanState
 from .parser import ReportError, parse_report
 from .process import OutputLimitError, ProcessTimeout, run_process
@@ -68,6 +70,7 @@ def scan_project(
             file_count=len(sources),
         )
         env = scanner_environment(config)
+        facts = AnalysisFacts()
         deadline = time.monotonic() + config.timeout
         for unit in units:
             remaining = deadline - time.monotonic()
@@ -102,7 +105,17 @@ def scan_project(
                 if process.returncode != 0:
                     raise ReportError(f"Slither process failed with exit {process.returncode}")
                 result.findings.extend(findings)
+                if "sentinel_facts" not in data:
+                    raise ReportError("Slither worker omitted compiler-backed facts")
+                unit_facts = AnalysisFacts.from_dict(data["sentinel_facts"])
+                facts.functions.extend(unit_facts.functions)
+                facts.contracts.extend(unit_facts.contracts)
                 result.metadata["slither_version"] = data["sentinel_metadata"]["slither_version"]
+        result.findings = deduplicate(result.findings + run_detectors(sources, facts))
+        result.metadata["contract_count"] = len(set(facts.contracts))
+        result.metadata["function_count"] = len(
+            {(f.file, f.name, f.start, f.end) for f in facts.functions if not f.constructor}
+        )
         result.state = ScanState.COMPLETED
     except (ProcessTimeout, LockTimeout) as exc:
         result.state = ScanState.TIMEOUT

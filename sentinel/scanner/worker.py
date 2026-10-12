@@ -4,9 +4,88 @@ from __future__ import annotations
 
 import importlib.metadata
 import json
+import re
 import subprocess
 import sys
+from dataclasses import asdict
 from pathlib import Path
+
+from sentinel.scanner.facts import AnalysisFacts, FunctionFact, NodeFact
+
+
+def collect_facts(entry: str) -> AnalysisFacts:
+    """Project Slither AST/IR into a small serializable detector interface."""
+    from slither.detectors.operations.unchecked_low_level_return_values import UncheckedLowLevel
+    from slither.slither import Slither
+    from slither.slithir.operations import LowLevelCall, SolidityCall
+
+    slither = Slither(entry, compile_force_framework="solc")
+    root = Path.cwd().resolve()
+    facts = AnalysisFacts()
+    seen = set()
+    for contract in slither.contracts:
+        file = Path(contract.source_mapping.filename.absolute).resolve()
+        if not file.is_relative_to(root):
+            continue
+        facts.contracts.append(f"{file.relative_to(root).as_posix()}:{contract.name}")
+        for function in contract.functions_and_modifiers:
+            mapping = function.source_mapping
+            file = Path(mapping.filename.absolute).resolve()
+            key = (str(file), function.full_name, tuple(mapping.lines))
+            if key in seen or not file.is_relative_to(root) or not mapping.lines:
+                continue
+            seen.add(key)
+            nodes = []
+            unused = set(UncheckedLowLevel.detect_unused_return_values(function))
+            guards = list(function.nodes) + [
+                n for modifier in function.modifiers for n in modifier.nodes
+            ]
+            owner_guard = any(
+                (n.contains_if() or n.contains_require_or_assert())
+                and re.search(r"\bmsg\.sender\b", str(n.expression))
+                and re.search(r"\b_?(owner|admin)\b", str(n.expression), re.I)
+                and "==" in str(n.expression)
+                for n in guards
+            )
+            for node in function.nodes:
+                if not node.source_mapping.lines:
+                    continue
+                calls = []
+                for ir in node.irs:
+                    if isinstance(ir, LowLevelCall):
+                        calls.append(str(ir.function_name))
+                    elif isinstance(ir, SolidityCall):
+                        calls.append(str(ir.function.name))
+                nodes.append(
+                    NodeFact(
+                        min(node.source_mapping.lines),
+                        max(node.source_mapping.lines),
+                        str(node.expression or ""),
+                        bool(node.contains_if() or node.contains_require_or_assert()),
+                        tuple(str(v.name) for v in node.variables_read),
+                        tuple(calls),
+                        node in unused,
+                    )
+                )
+            facts.functions.append(
+                FunctionFact(
+                    file.relative_to(root).as_posix(),
+                    function.name,
+                    min(mapping.lines),
+                    max(mapping.lines),
+                    function.visibility,
+                    bool(owner_guard),
+                    tuple(v.name for v in function.all_state_variables_written()),
+                    tuple(
+                        call.function.name
+                        for call in function.all_internal_calls()
+                        if getattr(call, "function", None) is not None
+                    ),
+                    tuple(nodes),
+                    bool(function.is_constructor),
+                )
+            )
+    return facts
 
 
 def main() -> int:
@@ -34,6 +113,8 @@ def main() -> int:
         "slither_version": importlib.metadata.version("slither-analyzer"),
         "exit_code": completed.returncode,
     }
+    if data.get("success") and completed.returncode == 0:
+        data["sentinel_facts"] = asdict(collect_facts(entry))
     path.write_text(json.dumps(data), encoding="utf-8")
     return completed.returncode
 
