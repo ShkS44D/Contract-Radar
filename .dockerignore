@@ -1,5 +1,6 @@
 .git
-.env
+.env*
+!.env.example
 venv
 .venv
 **/__pycache__
@@ -22,3 +23,10 @@ docs/design
 
 .agents/
 skills-lock.json
+
+.vercel/
+build/
+dist/
+coverage.xml
+deployment/compiler-cache/
+public/static/

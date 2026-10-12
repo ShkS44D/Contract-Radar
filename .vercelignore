@@ -22,3 +22,6 @@ tests/
 samples/
 output/
 tmp/
+
+.agents/
+skills-lock.json

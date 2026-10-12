@@ -45,11 +45,11 @@ docker compose logs -f contract-radar
 docker compose down             # stop; report data remains in its volume
 ```
 
-Set `CONTRACT_RADAR_OFFLINE=true` to disable compiler downloads. Other pragma ranges may need compilers outside the preinstalled set. Container runtime controls remain unverified locally; CI includes an actual build/smoke test.
+Set `CONTRACT_RADAR_OFFLINE=true` to disable compiler downloads. Other pragma ranges may need compilers outside the preinstalled set. GitHub CI verifies the Linux container build, startup, health endpoint, and a real scanner smoke test.
 
 ## Deploy on Vercel
 
-[Live deployment](https://contract-radar-security.vercel.app) · Access currently follows the Vercel project’s login-protection settings.
+[Live deployment](https://contract-radar-security.vercel.app)
 
 A Docker-free Vercel entrypoint uses request-bound scans, bundled compilers, and private expiring Redis reports. See [deployment instructions and hosted limits](docs/DEPLOYMENT.md). Local/Docker mode keeps the asynchronous worker.
 
@@ -221,7 +221,7 @@ Sources are deleted before terminal results are published. Cleanup errors are ex
 - No automatic dependency fetching, uploaded framework scripts, on-chain verification, symbolic execution, or exploit simulation.
 - One app process; no distributed durable queue, authentication, or public multi-tenant isolation. Non-root Docker is not a complete hostile-code sandbox.
 - Two compilation passes per unit. PDF uses portable fonts and explicit escapes for non-ASCII source; JSON/Markdown/web retain UTF-8.
-- Docker/remote CI need the remaining checks above. ARM64 container/compiler support is unverified.
+- Docker and remote CI have passed on Linux x86-64. ARM64 container/compiler support is unverified.
 
 Roadmap: reuse one compilation artifact, expand reviewed compiler support, strengthen role/bounds/dataflow predicates, add durable workers/authenticated reports, and benchmark against audited-contract corpora. Ship these with reproducible tests.
 

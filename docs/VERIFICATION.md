@@ -47,3 +47,11 @@ SARIF schema reference: [OASIS SARIF schema](https://github.com/oasis-tcs/sarif-
 
 The renamed package passed 108 unit/security tests (90.21% scanner coverage), all 10 real compiler integration tests, Ruff checks/format, and mypy on Windows and Linux targets. Desktop (1440px) and mobile (390px) browser checks covered upload, asynchronous report completion, search, responsive overflow, and branded SARIF/Markdown/PDF downloads with no page errors. Compose configuration validates; a local Docker image build remains unverified because the daemon was unavailable. Existing local scan data remains ignored during migration.
 
+
+## Final release checks — 2026-10-12
+
+The current package passes 126 unit/security tests with 90.20% scanner coverage, all 10 opt-in real compiler integration tests, UTF-8 validation, Ruff checks/format, mypy, and Compose configuration validation. Earlier limitations above describe the original local environment. Subsequent GitHub CI successfully exercised Linux builds, both Python versions, integration tests, and the non-root Docker startup/health/scan flow; the current CI badge links to the latest exact-commit status.
+
+The final Vercel release is staged and tested before production domain assignment. Check the health endpoint, browser upload/report flow on desktop/mobile, safe and vulnerable contracts, invalid compilation with no score, ZIP imports, exported reports, and persistent report reads. `contract-radar-security.vercel.app` is the configured production address; the superseded scope alias is removed after the final address is verified.
+
+The obsolete prototype PDF was removed. Local recursive cleanup was rejected by automatic approval review; ignored legacy venv/reports/cache folders remain local and are excluded from Git, Docker build context, and Vercel uploads. They are not part of the shipped release.

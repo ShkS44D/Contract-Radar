@@ -25,6 +25,8 @@
 
 ### Changed
 
+- Removed the obsolete prototype proposal PDF and excluded deployment secrets, provisioned helper skills, and local build leftovers from deployment contexts.
+
 - Rebranded as Contract Radar across package, CLI, configuration, reports, assets, and repository.
 
 - Upload -> report now uses background state/status redirects; `python app.py` remains supported.

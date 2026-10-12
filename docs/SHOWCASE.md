@@ -23,7 +23,7 @@ Record at 1280x800 or 1536x1024; optimize below roughly 8 MiB as `docs/images/de
 ## GitHub finishing checklist
 
 - Push the logical commits and wait for CI; fix Linux/Docker differences before tagging v2.0.0.
-- Finish Docker Desktop/WSL Linux-engine setup, run `docker compose build` and `docker compose up -d --wait`, then verify health and a real scan. This currently remains unverified locally.
+- Finish Docker Desktop/WSL Linux-engine setup, run `docker compose build` and `docker compose up -d --wait`, then verify health and a real scan. GitHub CI already verifies these checks on Linux x86-64; local Docker Desktop verification remains optional.
 - Remove the old local `venv/` and generated `reports/` folders manually. Automatic approval review blocked their deletion; both are ignored and untracked. Use the tested external venv instead.
 - Repository description: **Solidity smart contract scanner with Slither, explainable scoring, SARIF exports, REST API, and a CI-ready CLI.**
 - Topics: `solidity`, `smart-contract-security`, `web3`, `slither`, `static-analysis`, `python`, `flask`, `sarif`, `security-tools`.
