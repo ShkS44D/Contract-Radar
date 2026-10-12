@@ -1,0 +1,28 @@
+services:
+  sentinel:
+    build: .
+    ports:
+      - "127.0.0.1:5000:5000"
+    environment:
+      SENTINEL_WORKERS: "2"
+      SENTINEL_QUEUE_SIZE: "4"
+      SENTINEL_RETENTION_HOURS: "24"
+      SENTINEL_OFFLINE: "${SENTINEL_OFFLINE:-false}"
+      SENTINEL_COOKIE_SECURE: "${SENTINEL_COOKIE_SECURE:-false}"
+      SECRET_KEY: "${SECRET_KEY:-}"
+    volumes:
+      - reports:/data
+      - compilers:/opt/solc-home/.solc-select
+    tmpfs:
+      - /tmp:size=128m,mode=1777,noexec,nosuid
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    init: true
+    mem_limit: 1g
+    cpus: 2
+    pids_limit: 64
+    stop_grace_period: 15s
+volumes:
+  reports:
+  compilers:

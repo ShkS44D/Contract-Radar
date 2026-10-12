@@ -38,6 +38,8 @@ def test_parser_fixture():
         {"check": ""},
         {"elements": None},
         {"elements": []},
+        {"elements": [None]},
+        {"elements": [{"source_mapping": None}]},
     ],
 )
 def test_parser_rejects_invalid_detector(change):

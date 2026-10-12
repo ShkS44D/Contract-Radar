@@ -33,6 +33,7 @@ class FunctionFact:
     internal_calls: tuple[str, ...] = ()
     nodes: tuple[NodeFact, ...] = ()
     constructor: bool = False
+    modifier: bool = False
 
 
 @dataclass

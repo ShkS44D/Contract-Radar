@@ -91,13 +91,12 @@ class JobService:
         return result
 
     def _run(self, result: ScanResult, root: Path) -> None:
+        submitted = result.metadata["submitted_at"]
         try:
             result.state = ScanState.RUNNING
             self.store.save(result)
-            submitted = result.metadata["submitted_at"]
             result = self.scan(root, result.scan_id, result.filename, self.config)
             result.metadata["submitted_at"] = submitted
-            self.store.save(result)
         except Exception:
             logger.exception("Background scan %s failed", result.scan_id)
             result = ScanResult(
@@ -105,11 +104,24 @@ class JobService:
                 ScanState.ENGINE_ERROR,
                 result.filename,
                 diagnostics="The scan could not finish. Check application logs for the error.",
+                metadata={"submitted_at": submitted},
             )
-            self.store.save(result)
         finally:
-            shutil.rmtree(root, ignore_errors=True)
-            self.capacity.release()
+            try:
+                shutil.rmtree(root)
+            except OSError:
+                logger.exception("Source cleanup failed for scan %s", result.scan_id)
+                result = ScanResult(
+                    result.scan_id,
+                    ScanState.ENGINE_ERROR,
+                    result.filename,
+                    metadata={"submitted_at": submitted},
+                    diagnostics="Source cleanup failed. Check application logs and remove retained temporary sources.",
+                )
+            try:
+                self.store.save(result)
+            finally:
+                self.capacity.release()
 
     def shutdown(self) -> None:
         """Wait for admitted jobs before shutting down the application."""

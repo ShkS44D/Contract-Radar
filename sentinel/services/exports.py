@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import io
 import json
+from datetime import UTC, datetime
 from html import escape
 from typing import Any
 from urllib.parse import quote
@@ -92,7 +93,7 @@ def to_sarif(result: ScanResult) -> bytes:
     return json.dumps(
         {
             "version": "2.1.0",
-            "$schema": "https://json.schemastore.org/sarif-2.1.0.json",
+            "$schema": "https://docs.oasis-open.org/sarif/sarif/v2.1.0/errata01/os/schemas/sarif-schema-2.1.0.json",
             "runs": [run],
         },
         indent=2,
@@ -125,6 +126,20 @@ def to_markdown(result: ScanResult) -> bytes:
             escape(finding.description),
             "",
             f"**How to fix:** {escape(finding.remediation)}",
+            "References: "
+            + " · ".join(
+                filter(
+                    None,
+                    [
+                        f"[SWC-{finding.swc}](https://swcregistry.io/docs/SWC-{finding.swc}/)"
+                        if finding.swc
+                        else None,
+                        f"[CWE-{finding.cwe}](https://cwe.mitre.org/data/definitions/{finding.cwe}.html)"
+                        if finding.cwe
+                        else None,
+                    ],
+                )
+            ),
             "",
             "<pre>" + escape(finding.snippet) + "</pre>",
             "",
@@ -157,6 +172,23 @@ def to_pdf(result: ScanResult) -> bytes:
     )
 
     stream = io.BytesIO()
+
+    def pdf_text(value: object) -> str:
+        # Standard PDF fonts cannot cover all Unicode: preserve unsupported source
+        # as explicit escapes rather than silently rendering black boxes.
+        return escape(str(value).encode("ascii", errors="backslashreplace").decode())
+
+    def metadata_text(key: str, value: Any) -> str:
+        if key == "submitted_at":
+            return datetime.fromtimestamp(float(value), UTC).strftime("%Y-%m-%d %H:%M UTC")
+        if isinstance(value, dict):
+            return "<br/>".join(
+                f"{pdf_text(name)}: {pdf_text(item)}" for name, item in value.items()
+            )
+        if isinstance(value, list):
+            return "<br/>".join(pdf_text(item) for item in value) or "None"
+        return pdf_text(value)
+
     styles = getSampleStyleSheet()
     styles.add(ParagraphStyle("CodeSmall", fontName="Courier", fontSize=7, leading=10))
     styles["Title"].textColor = colors.HexColor("#14532d")
@@ -165,7 +197,7 @@ def to_pdf(result: ScanResult) -> bytes:
     story = [
         Paragraph("Solidity Sentinel", styles["Title"]),
         Paragraph("Static analysis report", styles["Heading2"]),
-        Paragraph(escape(result.filename), styles["BodyText"]),
+        Paragraph(pdf_text(result.filename), styles["BodyText"]),
         Spacer(1, 16),
     ]
     headline = (
@@ -173,11 +205,13 @@ def to_pdf(result: ScanResult) -> bytes:
         if result.score is not None
         else f"UNSCORED - {result.state.value}"
     )
-    story += [Paragraph(escape(headline), styles["Heading2"])]
+    story += [Paragraph(pdf_text(headline), styles["Heading2"])]
     if result.diagnostics:
-        story += [Paragraph(escape(result.diagnostics).replace("\n", "<br/>"), styles["BodyText"])]
+        story += [
+            Paragraph(pdf_text(result.diagnostics).replace("\n", "<br/>"), styles["BodyText"])
+        ]
     rows = [["Metadata", "Value"]] + [
-        [key.replace("_", " "), Paragraph(escape(str(value)), styles["BodyText"])]
+        [key.replace("_", " ").title(), Paragraph(metadata_text(key, value), styles["BodyText"])]
         for key, value in result.metadata.items()
     ]
     table = Table(rows, colWidths=[140, 350], repeatRows=1, hAlign="LEFT")
@@ -196,23 +230,27 @@ def to_pdf(result: ScanResult) -> bytes:
         first = len(story)
         story += [
             Paragraph(
-                escape(f"{finding.severity.value.upper()} - {finding.title}"), styles["Heading2"]
+                pdf_text(f"{finding.severity.value.upper()} - {finding.title}"), styles["Heading2"]
             ),
             Paragraph(
-                escape(
+                pdf_text(
                     f"{finding.rule_id} | {finding.confidence.value} confidence | {finding.file}:{finding.line_start}-{finding.line_end}"
                 ),
                 styles["BodyText"],
             ),
-            Paragraph(escape(finding.description), styles["BodyText"]),
-            Paragraph("<b>How to fix:</b> " + escape(finding.remediation), styles["BodyText"]),
+            Paragraph(pdf_text(finding.description), styles["BodyText"]),
+            Paragraph("<b>How to fix:</b> " + pdf_text(finding.remediation), styles["BodyText"]),
         ]
         refs = " / ".join(
             filter(
                 None,
                 [
-                    f"SWC-{finding.swc}" if finding.swc else None,
-                    f"CWE-{finding.cwe}" if finding.cwe else None,
+                    f'<link href="https://swcregistry.io/docs/SWC-{escape(finding.swc)}/">SWC-{escape(finding.swc)}</link>'
+                    if finding.swc
+                    else None,
+                    f'<link href="https://cwe.mitre.org/data/definitions/{escape(finding.cwe)}.html">CWE-{escape(finding.cwe)}</link>'
+                    if finding.cwe
+                    else None,
                 ],
             )
         )
@@ -220,7 +258,7 @@ def to_pdf(result: ScanResult) -> bytes:
             story += [Paragraph(refs, styles["BodyText"])]
         if finding.snippet:
             wrapped = "\n".join(
-                f"{finding.snippet_start + i:>4}  {line}"
+                f"{finding.snippet_start + i:>4}  {line.encode('ascii', errors='backslashreplace').decode()}"
                 for i, line in enumerate(finding.snippet.splitlines())
             )
             story += [
@@ -233,7 +271,7 @@ def to_pdf(result: ScanResult) -> bytes:
     for group in result.breakdown:
         story += [
             Paragraph(
-                escape(
+                pdf_text(
                     f"{group['rule_id']}: {group['instances']} instance(s), penalty {group['penalty']}, cap {group['cap']}"
                 ),
                 styles["BodyText"],

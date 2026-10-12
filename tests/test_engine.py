@@ -130,7 +130,7 @@ def test_engine_success(tmp_path):
                     "success": True,
                     "results": {"detectors": []},
                     "sentinel_metadata": {"slither_version": "test"},
-                    "sentinel_facts": {"functions": [], "contracts": []},
+                    "sentinel_facts": {"functions": [], "contracts": ["A.sol:A"]},
                 }
             )
         )
@@ -143,6 +143,32 @@ def test_engine_success(tmp_path):
         result = scan_project(tmp_path, "id", "A.sol")
     assert result.state == ScanState.COMPLETED
     assert ScanResult.from_dict(result.to_dict()) == result
+
+
+def test_no_analyzed_declarations_is_not_clean(tmp_path):
+    (tmp_path / "A.sol").write_text("pragma solidity ^0.8.0;")
+
+    def run(args, **kwargs):
+        from pathlib import Path
+
+        Path(args[-1]).write_text(
+            json.dumps(
+                {
+                    "success": True,
+                    "results": {"detectors": []},
+                    "sentinel_metadata": {"slither_version": "test"},
+                    "sentinel_facts": {"functions": [], "contracts": []},
+                }
+            )
+        )
+        return ProcessResult(0, "", "")
+
+    with (
+        patch("sentinel.scanner.engine.ensure_compiler"),
+        patch("sentinel.scanner.engine.run_process", side_effect=run),
+    ):
+        result = scan_project(tmp_path, "id", "A.sol")
+    assert result.state == ScanState.COMPILE_ERROR and result.score is None
 
 
 def test_failure_invariant():

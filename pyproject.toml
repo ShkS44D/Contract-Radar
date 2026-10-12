@@ -18,8 +18,9 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-dev = ["pytest==9.1.1", "pytest-cov==7.1.0", "ruff==0.17.0", "mypy==2.4.0", "jsonschema==4.26.0", "pip-tools==7.6.2"]
-production = ["gunicorn==23.0.0; sys_platform != 'win32'"]
+dev = ["pytest==9.1.1", "pytest-cov==7.1.0", "ruff==0.17.0", "mypy==2.4.0", "jsonschema==4.26.0", "pip-tools==7.6.2", "pypdf==6.20.0"]
+qa = ["playwright==1.63.0", "PyMuPDF==1.28.2"]
+production = ["gunicorn==23.0.0"]
 
 [project.scripts]
 sentinel = "sentinel.cli:main"
@@ -37,7 +38,6 @@ markers = ["integration: requires installed Solidity compiler and Slither"]
 
 [tool.coverage.run]
 source = ["sentinel.scanner"]
-omit = ["*/worker.py"]
 
 [tool.coverage.report]
 fail_under = 80

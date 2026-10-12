@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import signal
 import subprocess
+import sys
 import tempfile
 import time
 from dataclasses import dataclass
@@ -30,7 +31,7 @@ class ProcessResult:
 
 def terminate_tree(process: subprocess.Popen[bytes]) -> None:
     """Terminate the entire scan process tree on supported platforms."""
-    if os.name == "nt":
+    if sys.platform == "win32":
         subprocess.run(
             ["taskkill", "/PID", str(process.pid), "/T", "/F"],
             stdout=subprocess.DEVNULL,
@@ -40,7 +41,7 @@ def terminate_tree(process: subprocess.Popen[bytes]) -> None:
         )
     else:
         try:
-            os.killpg(process.pid, signal.SIGKILL)  # type: ignore[attr-defined]
+            os.killpg(process.pid, signal.SIGKILL)
         except ProcessLookupError:
             pass
     if process.poll() is None:
@@ -57,6 +58,10 @@ def run_process(
     output_limit: int = 2_000_000,
 ) -> ProcessResult:
     """Run an argument list without a shell, killing children on deadline/output overflow."""
+    if sys.platform == "win32":
+        creation_flags = subprocess.CREATE_NEW_PROCESS_GROUP
+    else:
+        creation_flags = 0
     with tempfile.TemporaryFile() as stdout, tempfile.TemporaryFile() as stderr:
         process = subprocess.Popen(
             args,
@@ -65,7 +70,7 @@ def run_process(
             stdout=stdout,
             stderr=stderr,
             start_new_session=os.name != "nt",
-            creationflags=subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0,
+            creationflags=creation_flags,
         )
         deadline = time.monotonic() + timeout
         try:

@@ -19,7 +19,7 @@ from .detectors import deduplicate, run_detectors
 from .facts import AnalysisFacts
 from .models import ScanResult, ScanState
 from .parser import ReportError, parse_report
-from .process import OutputLimitError, ProcessTimeout, run_process
+from .process import ProcessTimeout, run_process
 from .scoring import apply_score
 from .source import load_sources
 
@@ -112,6 +112,8 @@ def scan_project(
                 facts.functions.extend(unit_facts.functions)
                 facts.contracts.extend(unit_facts.contracts)
                 result.metadata["slither_version"] = data["sentinel_metadata"]["slither_version"]
+        if not facts.contracts:
+            raise CompileError("No contract, interface, or library declarations could be analyzed")
         result.findings = deduplicate(result.findings + run_detectors(sources, facts))
         if len(sources) == 1 and filename.lower().endswith(".sol"):
             # Keep source identity stable despite random physical upload filenames.
@@ -123,7 +125,11 @@ def scan_project(
             result.metadata["compilers"] = {filename: units[0].compiler}
         result.metadata["contract_count"] = len(set(facts.contracts))
         result.metadata["function_count"] = len(
-            {(f.file, f.name, f.start, f.end) for f in facts.functions if not f.constructor}
+            {
+                (f.file, f.name, f.start, f.end)
+                for f in facts.functions
+                if not f.constructor and not f.modifier
+            }
         )
         result.state = ScanState.COMPLETED
         apply_score(result)
@@ -133,7 +139,7 @@ def scan_project(
     except CompileError as exc:
         result.state = ScanState.COMPILE_ERROR
         result.diagnostics = str(exc)
-    except (OSError, ValueError, KeyError, TypeError, OutputLimitError) as exc:
+    except Exception as exc:
         result.state = ScanState.ENGINE_ERROR
         result.diagnostics = f"{type(exc).__name__}: {exc}"
         logger.exception("Scan %s failed", scan_id)

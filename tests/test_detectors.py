@@ -136,6 +136,13 @@ def test_public_mint_call_and_nonpublic_exclusion():
     )
 
 
+def test_specific_owner_capabilities_are_not_reported_twice():
+    function = replace(BASE, owner_guard=True, writes=("taxFee",))
+    facts = AnalysisFacts([function])
+    assert FeeDetector().detect(SOURCES, facts)
+    assert not OwnerPowerDetector().detect(SOURCES, facts)
+
+
 def test_dedup_retains_provenance_and_distinct_occurrences():
     narrow = Finding(
         "SS-006", "Origin", Severity.HIGH, Confidence.MEDIUM, "why", "fix", "A.sol", 3, 3

@@ -15,6 +15,7 @@ from sentinel.scanner.facts import AnalysisFacts, FunctionFact, NodeFact
 
 def collect_facts(entry: str) -> AnalysisFacts:
     """Project Slither AST/IR into a small serializable detector interface."""
+    from slither.core.declarations.modifier import Modifier
     from slither.detectors.operations.unchecked_low_level_return_values import UncheckedLowLevel
     from slither.slither import Slither
     from slither.slithir.operations import LowLevelCall, SolidityCall
@@ -83,6 +84,7 @@ def collect_facts(entry: str) -> AnalysisFacts:
                     ),
                     tuple(nodes),
                     bool(function.is_constructor),
+                    isinstance(function, Modifier),
                 )
             )
     return facts
@@ -127,6 +129,10 @@ def main() -> int:
         "exit_code": completed.returncode,
     }
     if data.get("success") and completed.returncode == 0:
+        # Slither omits detectors when there are zero findings. Normalize only after
+        # independently compiling facts and validating the CLI success/exit status.
+        if isinstance(data.get("results"), dict):
+            data["results"].setdefault("detectors", [])
         data["sentinel_facts"] = asdict(facts)
     path.write_text(json.dumps(data), encoding="utf-8")
     return completed.returncode

@@ -79,14 +79,23 @@ def parse_report(data: Any, sources: dict[str, Source]) -> list[Finding]:
         if not isinstance(check, str) or not check:
             raise ReportError("Missing detector ID")
         elements = detector.get("elements")
-        if not isinstance(elements, list):
+        if not isinstance(elements, list) or not all(
+            isinstance(element, dict) for element in elements
+        ):
             raise ReportError("Missing source elements")
         location = None
         for element in sorted(elements, key=lambda e: e.get("type") != "node"):
             mapping = element.get("source_mapping", {})
+            if not isinstance(mapping, dict):
+                raise ReportError("Invalid source mapping")
             name = str(mapping.get("filename_relative", "")).replace("\\", "/")
             lines = mapping.get("lines", [])
-            if name in sources and lines and all(isinstance(n, int) and n > 0 for n in lines):
+            if (
+                name in sources
+                and isinstance(lines, list)
+                and lines
+                and all(isinstance(n, int) and n > 0 for n in lines)
+            ):
                 location = name, min(lines), max(lines)
                 break
         if location is None:

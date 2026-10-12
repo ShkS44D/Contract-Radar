@@ -164,3 +164,23 @@ def test_uploaded_crlf_preserves_source_lines(tmp_path):
     )
     source = next(iter(load_sources(root).values()))
     assert source.text.splitlines() == ["pragma solidity ^0.8.0;", "contract A {}"]
+
+
+def test_cleanup_failure_is_visible_and_unscored(tmp_path):
+    from conftest import fake_scan
+
+    store = ResultStore(tmp_path / "db")
+    jobs = JobService(store, ScannerConfig(), scan=fake_scan)
+    root = tmp_path / "sources"
+    root.mkdir()
+    result = ScanResult(str(uuid.uuid4()), ScanState.QUEUED, "A.sol")
+    store.save(result)
+    jobs.capacity.acquire()
+    try:
+        with patch("sentinel.services.jobs.shutil.rmtree", side_effect=PermissionError("locked")):
+            jobs._run(result, root)
+        failed = store.get(result.scan_id)
+        assert failed.state == ScanState.ENGINE_ERROR and failed.score is None
+        assert "cleanup failed" in failed.diagnostics
+    finally:
+        jobs.shutdown()

@@ -247,6 +247,11 @@ class OwnerPowerDetector(Detector):
             "tax",
             "implementation",
         }
+        if any(
+            detector().matches(function, facts)
+            for detector in (MintDetector, FeeDetector, BlacklistDetector)
+        ):
+            return []  # The more specific capability rule already reports this power.
         writes = any(identifier_words(v) & sensitive for v in function.writes)
         return (
             declaration(function)

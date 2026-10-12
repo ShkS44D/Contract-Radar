@@ -1,0 +1,15 @@
+{
+  "engine": "slither-analyzer 0.11.6",
+  "compiler": "0.8.30",
+  "policy": "Required rules must be present; forbidden rules absent. Incidental informational/style findings may vary. Full observed rule lists are recorded after verification.",
+  "samples": {
+    "Reentrancy.sol": {"required": ["slither/reentrancy-eth"], "forbidden": ["SS-008"]},
+    "TxOrigin.sol": {"required": ["SS-006"], "forbidden": []},
+    "UncheckedCall.sol": {"required": ["SS-008"], "forbidden": []},
+    "Selfdestruct.sol": {"required": ["SS-002"], "forbidden": []},
+    "OwnerControls.sol": {"required": ["SS-001", "SS-003", "SS-004", "SS-005", "SS-009"], "forbidden": ["SS-010"]},
+    "PrecisionLoss.sol": {"required": ["slither/divide-before-multiply"], "forbidden": []},
+    "HiddenOwnership.sol": {"required": ["SS-007", "SS-010"], "forbidden": ["SS-008"]},
+    "SafeCounter.sol": {"required": [], "forbidden": ["SS-001", "SS-002", "SS-003", "SS-004", "SS-005", "SS-006", "SS-007", "SS-008", "SS-009", "SS-010", "SS-011"], "no_material_findings": true}
+  }
+}
