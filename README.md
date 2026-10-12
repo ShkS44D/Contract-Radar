@@ -220,3 +220,8 @@ Roadmap: reuse one compilation artifact, expand reviewed compiler support, stren
 ## Contributing and license
 
 [CONTRIBUTING](CONTRIBUTING.md) · [CHANGELOG](CHANGELOG.md) · [MIT license](LICENSE). Maintained by S44D.
+
+## Author
+
+Developed by **Muhammad Saad Ahmed (S44D)**, Cybersecurity & Web3 Security Researcher. [LinkedIn](https://www.linkedin.com/in/shsaadahmed/).
+
