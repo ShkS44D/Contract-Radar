@@ -1,5 +1,7 @@
 # Vercel deployment
 
+Deployment address: [contract-radar-security.vercel.app](https://contract-radar-security.vercel.app). Vercel project name: `contract-radar`. Login protection is configured in the Vercel dashboard. A domain assignment does not change that setting.
+
 Contract Radar can run on Vercel without Docker. `vercel_app.py` is a separate entrypoint; `python app.py`, the CLI, and Docker retain background scanning and SQLite.
 
 ## Hosted behavior
