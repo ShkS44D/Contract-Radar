@@ -1,4 +1,4 @@
-# Solidity Sentinel: baseline analysis and v2.0.0 rebuild plan
+# Contract Radar: baseline analysis and v2.0.0 rebuild plan
 
 Date: 2026-10-12. Status: approved baseline analysis, retained as the v1 snapshot. The rebuild and verification are recorded in CHANGELOG.md and docs/VERIFICATION.md.
 
@@ -104,7 +104,7 @@ Scoring deducts 30/15/10/5/2/1 for critical/high/medium/low/info/gas findings re
 
 ### Shared model and package
 
-Use a `sentinel` package, Flask app factory, web/API blueprints, independent scanner package, and services for uploads, jobs, storage, and exports. Use typed dataclasses/enums with explicit JSON serialization. A Finding has a rule ID and deterministic instance fingerprint, severity/confidence, provenance, optional applicable SWC/CWE identifiers, relative source path/range, snippet, explanation, and remediation. A ScanResult owns state, metadata, diagnostics, findings, and an optional scoring breakdown.
+Use a `contract_radar` package, Flask app factory, web/API blueprints, independent scanner package, and services for uploads, jobs, storage, and exports. Use typed dataclasses/enums with explicit JSON serialization. A Finding has a rule ID and deterministic instance fingerprint, severity/confidence, provenance, optional applicable SWC/CWE identifiers, relative source path/range, snippet, explanation, and remediation. A ScanResult owns state, metadata, diagnostics, findings, and an optional scoring breakdown.
 
 Invariant: only a successfully validated completed result may contain score/grade/risk. Public queued/running states are separate from terminal `completed`, `compile_error`, `timeout`, and `engine_error`. Validation failures return HTTP errors before creating scans. CLI, API, web, and exports consume the same models, preventing divergent results.
 

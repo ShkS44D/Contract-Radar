@@ -14,9 +14,9 @@ from pathlib import Path
 from filelock import FileLock
 from filelock import Timeout as LockTimeout
 
-from sentinel.config import ScannerConfig
-from sentinel.scanner.engine import scan_project
-from sentinel.scanner.models import ScanResult, ScanState
+from contract_radar.config import ScannerConfig
+from contract_radar.scanner.engine import scan_project
+from contract_radar.scanner.models import ScanResult, ScanState
 
 from .storage import ResultStore
 
@@ -44,11 +44,11 @@ class JobService:
             self.lock.acquire(timeout=0)
         except LockTimeout as exc:
             raise RuntimeError(
-                "Only one application process may use a Sentinel data directory"
+                "Only one application process may use a Contract Radar data directory"
             ) from exc
         self.config = config
         self.scan = scan
-        self.pool = ThreadPoolExecutor(max_workers=workers, thread_name_prefix="sentinel")
+        self.pool = ThreadPoolExecutor(max_workers=workers, thread_name_prefix="contract_radar")
         self.capacity = threading.BoundedSemaphore(workers + queue_size)
         self.store.recover()
         self.temp_root = self.store.path.parent / "temp"
@@ -63,7 +63,7 @@ class JobService:
                         shutil.rmtree(path)
         self.stop = threading.Event()
         self.maintenance = threading.Thread(
-            target=self._maintain, name="sentinel-retention", daemon=True
+            target=self._maintain, name="contract_radar-retention", daemon=True
         )
         self.maintenance.start()
         atexit.register(self.shutdown)

@@ -6,10 +6,10 @@ from uuid import UUID
 from flask import abort, current_app, request
 from werkzeug.utils import secure_filename
 
-from sentinel.scanner.models import ScanResult
-from sentinel.services.jobs import JobService, QueueFull
-from sentinel.services.storage import ResultStore
-from sentinel.services.uploads import UploadError, prepare_upload
+from contract_radar.scanner.models import ScanResult
+from contract_radar.services.jobs import JobService, QueueFull
+from contract_radar.services.storage import ResultStore
+from contract_radar.services.uploads import UploadError, prepare_upload
 
 
 def submit_upload() -> ScanResult:
@@ -22,10 +22,10 @@ def submit_upload() -> ScanResult:
             upload.stream,
             upload.filename,
             Path(current_app.config["DATA_DIR"]) / "temp",
-            current_app.extensions["sentinel_upload_policy"],
+            current_app.extensions["contract_radar_upload_policy"],
         )
         label = (secure_filename(upload.filename) or "contract.sol")[:150]
-        jobs: JobService = current_app.extensions["sentinel_jobs"]
+        jobs: JobService = current_app.extensions["contract_radar_jobs"]
         return jobs.submit(root, label)
     except UploadError as exc:
         abort(400, description=str(exc))
@@ -40,7 +40,7 @@ def get_result(scan_id: str) -> ScanResult:
             raise ValueError
     except ValueError:
         abort(404, description="Report not found or expired")
-    store: ResultStore = current_app.extensions["sentinel_store"]
+    store: ResultStore = current_app.extensions["contract_radar_store"]
     result = store.get(scan_id)
     if result is None:
         abort(404, description="Report not found or expired")

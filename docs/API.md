@@ -12,9 +12,9 @@ The machine-readable OpenAPI 3.0.3 specification is at `/api/v1/openapi.json`. S
 Exports: `/report/<uuid>/export/json`, `/sarif`, `/md`, `/pdf`. Exports are downloadable attachments; queued/running jobs return 409. Failed reports can be exported as explicitly unscored diagnostics. JSON carries the full normalized result; SARIF 2.1.0 includes source locations, rule help, fingerprints, and unsuccessful execution status for failures.
 
 ```sh
-sentinel scan samples/TxOrigin.sol --format json
-sentinel scan samples/TxOrigin.sol --format sarif --output sentinel.sarif --fail-on high
-sentinel scan path/to/sources --format md
+contract-radar scan samples/TxOrigin.sol --format json
+contract-radar scan samples/TxOrigin.sol --format sarif --output contract_radar.sarif --fail-on high
+contract-radar scan path/to/sources --format md
 ```
 
 CLI exit codes: 0 completed below the selected threshold, 1 completed with findings at/above `--fail-on`, 2 input/engine/compilation/timeout failure. CLI never suppresses engine failures as success. File, ZIP, and source-directory input share validation; unrelated build scripts are not executed.

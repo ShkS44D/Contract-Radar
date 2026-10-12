@@ -1,14 +1,14 @@
 services:
-  sentinel:
+  contract-radar:
     build: .
     ports:
       - "127.0.0.1:5000:5000"
     environment:
-      SENTINEL_WORKERS: "2"
-      SENTINEL_QUEUE_SIZE: "4"
-      SENTINEL_RETENTION_HOURS: "24"
-      SENTINEL_OFFLINE: "${SENTINEL_OFFLINE:-false}"
-      SENTINEL_COOKIE_SECURE: "${SENTINEL_COOKIE_SECURE:-false}"
+      CONTRACT_RADAR_WORKERS: "2"
+      CONTRACT_RADAR_QUEUE_SIZE: "4"
+      CONTRACT_RADAR_RETENTION_HOURS: "24"
+      CONTRACT_RADAR_OFFLINE: "${CONTRACT_RADAR_OFFLINE:-false}"
+      CONTRACT_RADAR_COOKIE_SECURE: "${CONTRACT_RADAR_COOKIE_SECURE:-false}"
       SECRET_KEY: "${SECRET_KEY:-}"
     volumes:
       - reports:/data

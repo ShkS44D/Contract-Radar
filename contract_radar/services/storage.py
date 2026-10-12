@@ -9,7 +9,7 @@ from collections.abc import Iterator
 from contextlib import contextmanager
 from pathlib import Path
 
-from sentinel.scanner.models import ScanResult, ScanState
+from contract_radar.scanner.models import ScanResult, ScanState
 
 
 class ResultStore:

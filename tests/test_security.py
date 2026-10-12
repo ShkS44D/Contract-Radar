@@ -9,13 +9,13 @@ import zipfile
 
 import pytest
 
-from sentinel import create_app
-from sentinel.config import ScannerConfig
-from sentinel.scanner.compiler import resolve_units
-from sentinel.scanner.source import load_sources
-from sentinel.services.jobs import JobService
-from sentinel.services.storage import ResultStore
-from sentinel.services.uploads import UploadError, UploadPolicy, prepare_path, prepare_upload
+from contract_radar import create_app
+from contract_radar.config import ScannerConfig
+from contract_radar.scanner.compiler import resolve_units
+from contract_radar.scanner.source import load_sources
+from contract_radar.services.jobs import JobService
+from contract_radar.services.storage import ResultStore
+from contract_radar.services.uploads import UploadError, UploadPolicy, prepare_path, prepare_upload
 
 SOURCE = b"pragma solidity ^0.8.0; contract A {}"
 
@@ -184,7 +184,7 @@ def test_csrf_and_security_headers(tmp_path):
             == 403
         )
     finally:
-        app.extensions["sentinel_jobs"].shutdown()
+        app.extensions["contract_radar_jobs"].shutdown()
 
 
 def test_scan_rate_limit(tmp_path):
@@ -214,21 +214,21 @@ def test_scan_rate_limit(tmp_path):
             == 429
         )
     finally:
-        app.extensions["sentinel_jobs"].shutdown()
+        app.extensions["contract_radar_jobs"].shutdown()
 
 
 def test_production_requires_secret_and_disables_debug(tmp_path, monkeypatch):
-    monkeypatch.setenv("SENTINEL_ENV", "production")
+    monkeypatch.setenv("CONTRACT_RADAR_ENV", "production")
     monkeypatch.delenv("SECRET_KEY", raising=False)
     with pytest.raises(RuntimeError):
         create_app({"DATA_DIR": tmp_path})
     monkeypatch.setenv("SECRET_KEY", "x" * 40)
-    monkeypatch.setenv("SENTINEL_DEBUG", "true")
+    monkeypatch.setenv("CONTRACT_RADAR_DEBUG", "true")
     app = create_app({"DATA_DIR": tmp_path})
     try:
         assert not app.debug
     finally:
-        app.extensions["sentinel_jobs"].shutdown()
+        app.extensions["contract_radar_jobs"].shutdown()
 
 
 def test_single_process_lock_and_abandoned_temp_cleanup(tmp_path):

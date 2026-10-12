@@ -3,7 +3,7 @@
 SPEC = {
     "openapi": "3.0.3",
     "info": {
-        "title": "Solidity Sentinel API",
+        "title": "Contract Radar API",
         "version": "2.0.0",
         "description": "Asynchronous static analysis. Only completed scans have scores.",
     },

@@ -10,7 +10,7 @@ import sys
 from dataclasses import asdict
 from pathlib import Path
 
-from sentinel.scanner.facts import AnalysisFacts, FunctionFact, NodeFact
+from contract_radar.scanner.facts import AnalysisFacts, FunctionFact, NodeFact
 
 
 def collect_facts(entry: str) -> AnalysisFacts:
@@ -124,7 +124,7 @@ def main() -> int:
     if not path.is_file():
         return completed.returncode or 2
     data = json.loads(path.read_text(encoding="utf-8"))
-    data["sentinel_metadata"] = {
+    data["contract_radar_metadata"] = {
         "slither_version": importlib.metadata.version("slither-analyzer"),
         "exit_code": completed.returncode,
     }
@@ -133,7 +133,7 @@ def main() -> int:
         # independently compiling facts and validating the CLI success/exit status.
         if isinstance(data.get("results"), dict):
             data["results"].setdefault("detectors", [])
-        data["sentinel_facts"] = asdict(facts)
+        data["contract_radar_facts"] = asdict(facts)
     path.write_text(json.dumps(data), encoding="utf-8")
     return completed.returncode
 

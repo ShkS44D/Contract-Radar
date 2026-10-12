@@ -1,4 +1,4 @@
-"""Solidity Sentinel application package."""
+"""Contract Radar application package."""
 
 from typing import TYPE_CHECKING, Any
 
@@ -20,30 +20,30 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
     from flask.typing import ResponseReturnValue
     from werkzeug.exceptions import HTTPException
 
-    from sentinel.config import ScannerConfig
-    from sentinel.services.jobs import JobService
-    from sentinel.services.storage import ResultStore
-    from sentinel.services.uploads import UploadPolicy
+    from contract_radar.config import ScannerConfig
+    from contract_radar.services.jobs import JobService
+    from contract_radar.services.storage import ResultStore
+    from contract_radar.services.uploads import UploadPolicy
 
     load_dotenv()
     app = Flask(__name__)
-    production = os.getenv("SENTINEL_ENV", "development") == "production"
+    production = os.getenv("CONTRACT_RADAR_ENV", "development") == "production"
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY") or (None if production else secrets.token_hex(32)),
-        DEBUG=os.getenv("SENTINEL_DEBUG", "false").lower() == "true" and not production,
-        DATA_DIR=Path(os.getenv("SENTINEL_DATA_DIR", ".sentinel")).resolve(),
-        MAX_CONTENT_LENGTH=int(os.getenv("SENTINEL_MAX_UPLOAD_MB", "2")) * 1024 * 1024,
-        MAX_EXTRACTED=int(os.getenv("SENTINEL_MAX_EXTRACTED_MB", "8")) * 1024 * 1024,
-        MAX_FILES=int(os.getenv("SENTINEL_MAX_FILES", "50")),
-        RETENTION_HOURS=float(os.getenv("SENTINEL_RETENTION_HOURS", "24")),
-        WORKERS=int(os.getenv("SENTINEL_WORKERS", "2")),
-        QUEUE_SIZE=int(os.getenv("SENTINEL_QUEUE_SIZE", "4")),
-        SCAN_RATE_LIMIT=os.getenv("SENTINEL_RATE_LIMIT", "10 per minute"),
+        DEBUG=os.getenv("CONTRACT_RADAR_DEBUG", "false").lower() == "true" and not production,
+        DATA_DIR=Path(os.getenv("CONTRACT_RADAR_DATA_DIR", ".contract-radar")).resolve(),
+        MAX_CONTENT_LENGTH=int(os.getenv("CONTRACT_RADAR_MAX_UPLOAD_MB", "2")) * 1024 * 1024,
+        MAX_EXTRACTED=int(os.getenv("CONTRACT_RADAR_MAX_EXTRACTED_MB", "8")) * 1024 * 1024,
+        MAX_FILES=int(os.getenv("CONTRACT_RADAR_MAX_FILES", "50")),
+        RETENTION_HOURS=float(os.getenv("CONTRACT_RADAR_RETENTION_HOURS", "24")),
+        WORKERS=int(os.getenv("CONTRACT_RADAR_WORKERS", "2")),
+        QUEUE_SIZE=int(os.getenv("CONTRACT_RADAR_QUEUE_SIZE", "4")),
+        SCAN_RATE_LIMIT=os.getenv("CONTRACT_RADAR_RATE_LIMIT", "10 per minute"),
         MAX_FORM_PARTS=10,
         MAX_FORM_MEMORY_SIZE=64 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
-        SESSION_COOKIE_SECURE=os.getenv("SENTINEL_COOKIE_SECURE", "false").lower() == "true",
+        SESSION_COOKIE_SECURE=os.getenv("CONTRACT_RADAR_COOKIE_SECURE", "false").lower() == "true",
     )
     if config:
         app.config.update(config)
@@ -67,18 +67,18 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
         **kwargs,
     )
     app.extensions.update(
-        sentinel_store=store,
-        sentinel_jobs=jobs,
-        sentinel_upload_policy=UploadPolicy(
+        contract_radar_store=store,
+        contract_radar_jobs=jobs,
+        contract_radar_upload_policy=UploadPolicy(
             app.config["MAX_CONTENT_LENGTH"], app.config["MAX_EXTRACTED"], app.config["MAX_FILES"]
         ),
     )
-    from sentinel.blueprints.api import api
-    from sentinel.blueprints.web import web
+    from contract_radar.blueprints.api import api
+    from contract_radar.blueprints.web import web
 
     app.register_blueprint(web)
     app.register_blueprint(api)
-    from sentinel.security import configure_security
+    from contract_radar.security import configure_security
 
     configure_security(app)
 

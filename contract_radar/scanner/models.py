@@ -60,7 +60,7 @@ class Finding:
     snippet_start: int = 1
     swc: str | None = None
     cwe: str | None = None
-    provenance: list[str] = field(default_factory=lambda: ["sentinel"])
+    provenance: list[str] = field(default_factory=lambda: ["contract_radar"])
     id: str = ""
 
     def __post_init__(self) -> None:

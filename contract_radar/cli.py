@@ -19,7 +19,7 @@ from .services.uploads import UploadError, UploadPolicy, prepare_path
 def main(argv: list[str] | None = None) -> int:
     """Run a scan: 0 success, 1 finding threshold, 2 input/engine failure."""
     parser = argparse.ArgumentParser(
-        prog="sentinel", description="Solidity static analysis (not a manual audit)"
+        prog="contract-radar", description="Solidity static analysis (not a manual audit)"
     )
     sub = parser.add_subparsers(dest="command", required=True)
     scan = sub.add_parser("scan", help="Scan a .sol file, .zip archive, or source directory")
@@ -30,7 +30,7 @@ def main(argv: list[str] | None = None) -> int:
     args = parser.parse_args(argv)
     logging.basicConfig(level=logging.WARNING)
     try:
-        with tempfile.TemporaryDirectory(prefix="sentinel-cli-") as temporary:
+        with tempfile.TemporaryDirectory(prefix="contract_radar-cli-") as temporary:
             root = prepare_path(args.path.resolve(), Path(temporary), UploadPolicy())
             try:
                 result = scan_project(root, str(uuid.uuid4()), args.path.name)

@@ -15,6 +15,9 @@ coverage.xml
 build/
 dist/
 instance/
-.sentinel/
+.contract-radar/
 tmp/
 output/
+
+# Legacy local scan data remains private during migration.
+.sentinel/

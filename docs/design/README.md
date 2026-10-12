@@ -1,6 +1,6 @@
 # Report design reference
 
-`report-concept.png` was generated with the built-in Image Gen tool as a visual reference, not executable UI. Prompt: a full 1536x1024 desktop Solidity Sentinel report with charcoal/emerald colors, header, score/grade/risk band, compiler/engine/duration/SLOC/contract/function metadata, severity filters and search, expandable evidence/remediation/source findings, exports, and audit disclaimer. No gradients, decorative badges, sidebar, marketing imagery, or external assets.
+`report-concept.png` was generated with the built-in Image Gen tool as a visual reference, not executable UI. Prompt: a full 1536x1024 desktop Contract Radar report with charcoal/emerald colors, header, score/grade/risk band, compiler/engine/duration/SLOC/contract/function metadata, severity filters and search, expandable evidence/remediation/source findings, exports, and audit disclaimer. No gradients, decorative badges, sidebar, marketing imagery, or external assets.
 
 Implementation tokens: background #0b1010, surface #101819, foreground #f4f7f6, muted #a7b8c1, border #344548, accent #4ade80, high #ff6b76, medium #fbc34b. System sans-serif and monospace; 42px heading, 26px section headings, 16px body, 14px controls; 7-8px component radii. Preserve the concept's open horizontal report layout and two-column expanded finding, collapsing to one column on mobile.
 

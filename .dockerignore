@@ -4,7 +4,7 @@ venv
 .venv
 **/__pycache__
 **/*.pyc
-.sentinel
+.contract-radar
 uploads
 reports
 .pytest_cache
@@ -16,3 +16,6 @@ output
 tmp
 *.egg-info
 docs/design
+
+# Legacy local scan data remains private during migration.
+.sentinel/

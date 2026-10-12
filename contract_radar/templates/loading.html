@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% block title %}Scanning · Solidity Sentinel{% endblock %}
+{% block title %}Scanning · Contract Radar{% endblock %}
 {% block content %}
 <section class="state-page" id="scan-progress" data-status-url="{{ url_for('api.read_scan', scan_id=result.scan_id) }}">
   <div class="spinner" aria-hidden="true"></div>

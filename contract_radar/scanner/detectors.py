@@ -352,7 +352,8 @@ def deduplicate(findings: list[Finding]) -> list[Finding]:
     """Merge equivalent overlapping locations while retaining the narrowest evidence."""
     merged: list[Finding] = []
     for finding in sorted(
-        findings, key=lambda f: (f.line_end - f.line_start, "sentinel" not in f.provenance, f.id)
+        findings,
+        key=lambda f: (f.line_end - f.line_start, "contract_radar" not in f.provenance, f.id),
     ):
         existing = next(
             (

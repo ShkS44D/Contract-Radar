@@ -1,6 +1,6 @@
 # Educational sample contracts
 
-These are test/demo inputs, not deployment templates. All pin Solidity 0.8.30. Expected rules are verified with Slither 0.11.6 and Sentinel's registry. `expected.json` specifies required/forbidden findings rather than assuming every incidental style/gas diagnostic is immutable across engine upgrades.
+These are test/demo inputs, not deployment templates. All pin Solidity 0.8.30. Expected rules are verified with Slither 0.11.6 and Contract Radar's registry. `expected.json` specifies required/forbidden findings rather than assuming every incidental style/gas diagnostic is immutable across engine upgrades.
 
 | Contract | Intentional behavior | Expected findings |
 |---|---|---|
@@ -13,11 +13,11 @@ These are test/demo inputs, not deployment templates. All pin Solidity 0.8.30. E
 | HiddenOwnership.sol | `sync` changes owner; arbitrary delegatecall | SS-010, SS-007; checked call must not trigger SS-008 |
 | SafeCounter.sol | Checked arithmetic and emitted event | No custom/material findings; not proof of universal safety |
 
-OwnerControls demonstrates capabilities, not a claim that every authorized mint/pause is malicious. Sentinel does not prove caps/governance correctness. Integration tests also compile comments/strings/coffee/feed and broken-source fixtures; these are not additional deployable samples.
+OwnerControls demonstrates capabilities, not a claim that every authorized mint/pause is malicious. Contract Radar does not prove caps/governance correctness. Integration tests also compile comments/strings/coffee/feed and broken-source fixtures; these are not additional deployable samples.
 
 ```sh
-sentinel scan samples/Reentrancy.sol --format md --fail-on high
-SENTINEL_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q
+contract-radar scan samples/Reentrancy.sol --format md --fail-on high
+CONTRACT_RADAR_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q
 ```
 
 The first command deliberately exits 1. Integration needs actual Slither/compiler binaries; first-use installation has a timeout.

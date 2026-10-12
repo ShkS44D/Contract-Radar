@@ -1,4 +1,4 @@
-"""Real pinned-engine samples; opt in with SENTINEL_RUN_INTEGRATION=1."""
+"""Real pinned-engine samples; opt in with CONTRACT_RADAR_RUN_INTEGRATION=1."""
 
 import io
 import json
@@ -7,18 +7,18 @@ from pathlib import Path
 
 import pytest
 
-from sentinel.config import ScannerConfig
-from sentinel.scanner.engine import scan_project
-from sentinel.scanner.models import ScanState, Severity
-from sentinel.services.uploads import UploadPolicy, prepare_upload
+from contract_radar.config import ScannerConfig
+from contract_radar.scanner.engine import scan_project
+from contract_radar.scanner.models import ScanState, Severity
+from contract_radar.services.uploads import UploadPolicy, prepare_upload
 
 ROOT = Path(__file__).resolve().parents[1]
 EXPECTED = json.loads((ROOT / "samples/expected.json").read_text())
 pytestmark = [
     pytest.mark.integration,
     pytest.mark.skipif(
-        os.getenv("SENTINEL_RUN_INTEGRATION") != "1",
-        reason="Set SENTINEL_RUN_INTEGRATION=1 to run real compiler scans",
+        os.getenv("CONTRACT_RADAR_RUN_INTEGRATION") != "1",
+        reason="Set CONTRACT_RADAR_RUN_INTEGRATION=1 to run real compiler scans",
     ),
 ]
 

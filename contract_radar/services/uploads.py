@@ -37,7 +37,7 @@ def validate_source(data: bytes) -> str:
         raise UploadError("The source file is empty")
     if any(ord(char) < 32 and char not in "\r\n\t" for char in text) or "\x7f" in text:
         raise UploadError("Binary content is not allowed")
-    from sentinel.scanner.source import mask_source
+    from contract_radar.scanner.source import mask_source
 
     if not re.search(
         r"\b(pragma\s+solidity|contract\s+\w+|library\s+\w+|interface\s+\w+|import|function\s+\w+|struct\s+\w+|enum\s+\w+|error\s+\w+|type\s+\w+)\b",

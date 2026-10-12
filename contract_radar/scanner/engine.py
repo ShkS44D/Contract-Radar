@@ -12,7 +12,7 @@ from pathlib import Path
 
 from filelock import Timeout as LockTimeout
 
-from sentinel.config import ScannerConfig
+from contract_radar.config import ScannerConfig
 
 from .compiler import CompileError, ensure_compiler, resolve_units
 from .detectors import deduplicate, run_detectors
@@ -85,13 +85,19 @@ def scan_project(
                 offline=config.offline,
             )
             child_env = dict(env, SOLC_VERSION=unit.compiler)
-            with tempfile.TemporaryDirectory(prefix="sentinel-engine-") as temporary:
+            with tempfile.TemporaryDirectory(prefix="contract_radar-engine-") as temporary:
                 output = Path(temporary) / "slither.json"
                 remaining = deadline - time.monotonic()
                 if remaining <= 0:
                     raise ProcessTimeout("Scan deadline exceeded during compiler setup")
                 process = run_process(
-                    [sys.executable, "-m", "sentinel.scanner.worker", unit.entry, str(output)],
+                    [
+                        sys.executable,
+                        "-m",
+                        "contract_radar.scanner.worker",
+                        unit.entry,
+                        str(output),
+                    ],
                     cwd=root,
                     env=child_env,
                     timeout=remaining,
@@ -106,12 +112,14 @@ def scan_project(
                 if process.returncode != 0:
                     raise ReportError(f"Slither process failed with exit {process.returncode}")
                 result.findings.extend(findings)
-                if "sentinel_facts" not in data:
+                if "contract_radar_facts" not in data:
                     raise ReportError("Slither worker omitted compiler-backed facts")
-                unit_facts = AnalysisFacts.from_dict(data["sentinel_facts"])
+                unit_facts = AnalysisFacts.from_dict(data["contract_radar_facts"])
                 facts.functions.extend(unit_facts.functions)
                 facts.contracts.extend(unit_facts.contracts)
-                result.metadata["slither_version"] = data["sentinel_metadata"]["slither_version"]
+                result.metadata["slither_version"] = data["contract_radar_metadata"][
+                    "slither_version"
+                ]
         if not facts.contracts:
             raise CompileError("No contract, interface, or library declarations could be analyzed")
         result.findings = deduplicate(result.findings + run_detectors(sources, facts))

@@ -18,7 +18,7 @@ def configure_security(app: Flask) -> None:
     csrf = CSRFProtect(app)
     csrf.exempt(app.blueprints["api"])
     limiter = Limiter(get_remote_address, app=app, storage_uri="memory://", default_limits=[])
-    app.extensions["sentinel_limiter"] = limiter
+    app.extensions["contract_radar_limiter"] = limiter
 
     def local_view(
         original: Callable[..., ResponseReturnValue],

@@ -9,12 +9,12 @@ from unittest.mock import patch
 
 import pytest
 
-from sentinel.cli import main
-from sentinel.config import ScannerConfig
-from sentinel.scanner.models import ScanResult, ScanState
-from sentinel.services.exports import to_json, to_markdown, to_pdf, to_sarif
-from sentinel.services.jobs import JobService, QueueFull
-from sentinel.services.storage import ResultStore
+from contract_radar.cli import main
+from contract_radar.config import ScannerConfig
+from contract_radar.scanner.models import ScanResult, ScanState
+from contract_radar.services.exports import to_json, to_markdown, to_pdf, to_sarif
+from contract_radar.services.jobs import JobService, QueueFull
+from contract_radar.services.storage import ResultStore
 
 
 def upload(
@@ -25,7 +25,7 @@ def upload(
 
 def wait_result(app, scan_id):
     for _ in range(100):
-        result = app.extensions["sentinel_store"].get(scan_id)
+        result = app.extensions["contract_radar_store"].get(scan_id)
         if result.state not in {ScanState.QUEUED, ScanState.RUNNING}:
             return result
         time.sleep(0.01)
@@ -48,12 +48,15 @@ def test_upload_report_exports_and_source_cleanup(client, app):
         exported = client.get(f"/report/{scan_id}/export/{format}")
         assert exported.status_code == 200
         assert exported.headers["Content-Disposition"].startswith("attachment")
-    app.extensions["sentinel_jobs"].shutdown()
+        assert "contract-radar-" in exported.headers["Content-Disposition"]
+    app.extensions["contract_radar_jobs"].shutdown()
     assert not list((app.config["DATA_DIR"] / "temp").iterdir())
 
 
 def test_original_web_flow(client, app):
-    assert client.get("/").status_code == 200
+    page = client.get("/")
+    assert page.status_code == 200
+    assert b"Contract Radar" in page.data
     response = upload(client, "/")
     assert response.status_code == 303
     scan_id = response.headers["Location"].split("/")[-1]
@@ -63,7 +66,7 @@ def test_original_web_flow(client, app):
 
 def test_failed_report_has_no_score(client, app):
     scan_id = str(uuid.uuid4())
-    app.extensions["sentinel_store"].save(
+    app.extensions["contract_radar_store"].save(
         ScanResult(scan_id, ScanState.COMPILE_ERROR, "A.sol", diagnostics="<compiler error>")
     )
     page = client.get(f"/report/{scan_id}").data
@@ -74,7 +77,7 @@ def test_failed_report_has_no_score(client, app):
 
 def test_loading_and_early_export(client, app):
     scan_id = str(uuid.uuid4())
-    app.extensions["sentinel_store"].save(ScanResult(scan_id, ScanState.RUNNING, "A.sol"))
+    app.extensions["contract_radar_store"].save(ScanResult(scan_id, ScanState.RUNNING, "A.sol"))
     assert b"Analyzing your contract" in client.get(f"/report/{scan_id}").data
     assert client.get(f"/report/{scan_id}/export/json").status_code == 409
 
@@ -102,14 +105,15 @@ def test_cli_exit_codes(tmp_path, capsys):
     file.write_text("contract A {}")
     from conftest import fake_scan
 
-    with patch("sentinel.cli.scan_project", side_effect=fake_scan):
+    with patch("contract_radar.cli.scan_project", side_effect=fake_scan):
         assert main(["scan", str(file), "--fail-on", "high"]) == 1
         assert json.loads(capsys.readouterr().out)["state"] == "completed"
         output = tmp_path / "report.md"
         assert main(["scan", str(file), "--format", "md", "-o", str(output)]) == 0
-        assert output.read_text().startswith("# Solidity Sentinel")
+        assert output.read_text().startswith("# Contract Radar")
     with patch(
-        "sentinel.cli.scan_project", return_value=ScanResult("id", ScanState.COMPILE_ERROR, "A.sol")
+        "contract_radar.cli.scan_project",
+        return_value=ScanResult("id", ScanState.COMPILE_ERROR, "A.sol"),
     ):
         assert main(["scan", str(file)]) == 2
     assert main(["scan", str(tmp_path / "missing.sol")]) == 2
@@ -153,8 +157,8 @@ def test_expired_reports_removed(tmp_path):
 
 
 def test_uploaded_crlf_preserves_source_lines(tmp_path):
-    from sentinel.scanner.source import load_sources
-    from sentinel.services.uploads import UploadPolicy, prepare_upload
+    from contract_radar.scanner.source import load_sources
+    from contract_radar.services.uploads import UploadPolicy, prepare_upload
 
     root = prepare_upload(
         io.BytesIO(b"pragma solidity ^0.8.0;\r\ncontract A {}\r\n"),
@@ -177,7 +181,9 @@ def test_cleanup_failure_is_visible_and_unscored(tmp_path):
     store.save(result)
     jobs.capacity.acquire()
     try:
-        with patch("sentinel.services.jobs.shutil.rmtree", side_effect=PermissionError("locked")):
+        with patch(
+            "contract_radar.services.jobs.shutil.rmtree", side_effect=PermissionError("locked")
+        ):
             jobs._run(result, root)
         failed = store.get(result.scan_id)
         assert failed.state == ScanState.ENGINE_ERROR and failed.score is None

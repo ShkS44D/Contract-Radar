@@ -24,4 +24,4 @@ Generic owner-power findings defer to more specific mint/fee/list rules for the 
 
 Selfdestruct descriptions follow EIP-6780: it still transfers Ether, while deletion normally requires execution in the creation transaction after Cancun. See https://eips.ethereum.org/EIPS/eip-6780.
 
-To add a detector: subclass `Detector` in `sentinel/scanner/detectors.py`, declare all metadata, implement `matches` over facts (or override `detect` for source-level checks), register it in `DETECTORS`, add positive/negative unit tests and a real compiler sample, then update this table and curated taxonomy/equivalence mappings. Never infer vulnerability solely from a function name.
+To add a detector: subclass `Detector` in `contract_radar/scanner/detectors.py`, declare all metadata, implement `matches` over facts (or override `detect` for source-level checks), register it in `DETECTORS`, add positive/negative unit tests and a real compiler sample, then update this table and curated taxonomy/equivalence mappings. Never infer vulnerability solely from a function name.

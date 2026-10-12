@@ -7,7 +7,7 @@ from pathlib import Path
 
 def main() -> None:
     """Start production serving; auto-provision a volume-local secret for Compose."""
-    data = Path(os.getenv("SENTINEL_DATA_DIR", "/data"))
+    data = Path(os.getenv("CONTRACT_RADAR_DATA_DIR", "/data"))
     data.mkdir(parents=True, exist_ok=True, mode=0o700)
     if not os.getenv("SECRET_KEY"):
         secret = data / ".secret-key"
@@ -16,12 +16,12 @@ def main() -> None:
             with os.fdopen(descriptor, "w") as stream:
                 stream.write(secrets.token_hex(32))
         os.environ["SECRET_KEY"] = secret.read_text().strip()
-    os.environ["SENTINEL_ENV"] = "production"
+    os.environ["CONTRACT_RADAR_ENV"] = "production"
     os.execvp(
         "gunicorn",
         [
             "gunicorn",
-            "sentinel:create_app()",
+            "contract_radar:create_app()",
             "--bind",
             "0.0.0.0:5000",
             "--workers",

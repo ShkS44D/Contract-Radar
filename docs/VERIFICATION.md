@@ -29,16 +29,21 @@ The in-app browser attach timed out. Playwright Chromium was used as the fallbac
 Real integration tests are separate because they invoke actual compilers and require network access on the first install. Reproduce:
 
 ```sh
-python -m pytest --cov=sentinel.scanner --cov-report=term-missing
-SENTINEL_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q
-python -m ruff check sentinel tests scripts app.py
-python -m ruff format --check sentinel tests scripts app.py
+python -m pytest --cov=contract_radar.scanner --cov-report=term-missing
+CONTRACT_RADAR_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q
+python -m ruff check contract_radar tests scripts app.py
+python -m ruff format --check contract_radar tests scripts app.py
 python -m mypy
 docker compose config --quiet
 docker compose build
 docker compose up -d --wait
 ```
 
-PowerShell integration: set `$env:SENTINEL_RUN_INTEGRATION='1'`, run pytest, then remove that environment variable. Native Linux process-tree cleanup, Docker privileges/resource controls, Compose startup, and CI behavior remain unverified locally until Docker Desktop's Linux engine is running. Cross-platform type checking is not a substitute for those runtime checks.
+PowerShell integration: set `$env:CONTRACT_RADAR_RUN_INTEGRATION='1'`, run pytest, then remove that environment variable. Native Linux process-tree cleanup, Docker privileges/resource controls, Compose startup, and CI behavior remain unverified locally until Docker Desktop's Linux engine is running. Cross-platform type checking is not a substitute for those runtime checks.
 
 SARIF schema reference: [OASIS SARIF schema](https://github.com/oasis-tcs/sarif-spec/blob/main/sarif-2.1/schema/sarif-schema-2.1.0.json). No claim of exhaustive vulnerability detection or exploit validation is made.
+
+## Contract Radar rebrand verification
+
+The renamed package passed 108 unit/security tests (90.21% scanner coverage), all 10 real compiler integration tests, Ruff checks/format, and mypy on Windows and Linux targets. Desktop (1440px) and mobile (390px) browser checks covered upload, asynchronous report completion, search, responsive overflow, and branded SARIF/Markdown/PDF downloads with no page errors. Compose configuration validates; a local Docker image build remains unverified because the daemon was unavailable. Existing local scan data remains ignored during migration.
+

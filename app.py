@@ -1,6 +1,6 @@
 """Backward-compatible development entry point; production uses the app factory."""
 
-from sentinel import create_app
+from contract_radar import create_app
 
 app = create_app()
 

@@ -33,6 +33,6 @@ def read_scan(scan_id: str) -> ResponseReturnValue:
 @api.get("/openapi.json")
 def openapi() -> ResponseReturnValue:
     """Expose the OpenAPI 3.0.3 upload and result schema."""
-    from sentinel.openapi import SPEC
+    from contract_radar.openapi import SPEC
 
     return jsonify(SPEC)

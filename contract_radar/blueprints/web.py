@@ -3,8 +3,8 @@
 from flask import Blueprint, Response, abort, redirect, render_template, url_for
 from flask.typing import ResponseReturnValue
 
-from sentinel.scanner.models import ScanState, Severity
-from sentinel.services.exports import EXPORTERS
+from contract_radar.scanner.models import ScanState, Severity
+from contract_radar.services.exports import EXPORTERS
 
 from .common import get_result, submit_upload
 
@@ -55,5 +55,7 @@ def export(scan_id: str, format: str) -> ResponseReturnValue:
     return Response(
         exporter(result),
         content_type=mimetype,
-        headers={"Content-Disposition": f'attachment; filename="sentinel-{scan_id}.{extension}"'},
+        headers={
+            "Content-Disposition": f'attachment; filename="contract-radar-{scan_id}.{extension}"'
+        },
     )

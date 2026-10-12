@@ -5,8 +5,8 @@ from unittest.mock import patch
 
 import pytest
 
-from sentinel.scanner import worker
-from sentinel.scanner.facts import AnalysisFacts
+from contract_radar.scanner import worker
+from contract_radar.scanner.facts import AnalysisFacts
 
 
 def test_worker_main_success(tmp_path, monkeypatch):
@@ -25,9 +25,9 @@ def test_worker_main_success(tmp_path, monkeypatch):
     ):
         assert worker.main() == 0
     data = json.loads(output.read_text())
-    assert data["sentinel_facts"] == {"functions": [], "contracts": []}
+    assert data["contract_radar_facts"] == {"functions": [], "contracts": []}
     assert data["results"]["detectors"] == []
-    assert data["sentinel_metadata"]["slither_version"] == "0.11.6"
+    assert data["contract_radar_metadata"]["slither_version"] == "0.11.6"
 
 
 @pytest.mark.parametrize("kind", ["crytic", "slither"])

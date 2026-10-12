@@ -5,9 +5,9 @@ from pathlib import Path
 
 import pytest
 
-from sentinel.scanner.models import Finding, Severity
-from sentinel.scanner.parser import ReportError, parse_report
-from sentinel.scanner.source import Source
+from contract_radar.scanner.models import Finding, Severity
+from contract_radar.scanner.parser import ReportError, parse_report
+from contract_radar.scanner.source import Source
 
 
 def fixture():

@@ -1,11 +1,11 @@
-<p align="center"><img src="docs/images/banner.svg" alt="Solidity Sentinel — evidence-first Solidity static analysis" width="100%"></p>
+<p align="center"><img src="docs/images/banner.svg" alt="Contract Radar — evidence-first Solidity static analysis" width="100%"></p>
 
-[![CI](https://github.com/ShkS44D/Solidity-Sentinel/actions/workflows/ci.yml/badge.svg)](https://github.com/ShkS44D/Solidity-Sentinel/actions/workflows/ci.yml)
+[![CI](https://github.com/ShkS44D/Contract-Radar/actions/workflows/ci.yml/badge.svg)](https://github.com/ShkS44D/Contract-Radar/actions/workflows/ci.yml)
 ![Python](https://img.shields.io/badge/python-3.11%20%7C%203.12-blue)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 ![Release](https://img.shields.io/badge/release-2.0.0-4ade80)
 
-**Solidity Sentinel** turns Solidity source into evidence-backed security reports using Slither and a compiler-aware custom detector layer. Upload a contract or ZIP project, inspect exact source locations and concrete fixes, or run the same engine through the REST API and a CI-ready CLI. Failed compilation, timeouts, and engine failures are explicitly **unscored**: absence of analysis can never become a perfect score.
+**Contract Radar** turns Solidity source into evidence-backed security reports using Slither and a compiler-aware custom detector layer. Upload a contract or ZIP project, inspect exact source locations and concrete fixes, or run the same engine through the REST API and a CI-ready CLI. Failed compilation, timeouts, and engine failures are explicitly **unscored**: absence of analysis can never become a perfect score.
 
 Static analysis is not a replacement for a manual audit. Scores summarize observed findings; they do not certify a contract's safety.
 
@@ -41,11 +41,11 @@ Open **http://localhost:5000**. The first build installs Slither and compilers *
 
 ```sh
 docker compose up --build        # rebuild after source changes
-docker compose logs -f sentinel
+docker compose logs -f contract-radar
 docker compose down             # stop; report data remains in its volume
 ```
 
-Set `SENTINEL_OFFLINE=true` to disable compiler downloads. Other pragma ranges may need compilers outside the preinstalled set. Container runtime controls remain unverified locally; CI includes an actual build/smoke test.
+Set `CONTRACT_RADAR_OFFLINE=true` to disable compiler downloads. Other pragma ranges may need compilers outside the preinstalled set. Container runtime controls remain unverified locally; CI includes an actual build/smoke test.
 
 ## Quick start: local Python
 
@@ -54,8 +54,8 @@ Use Python 3.11 or 3.12 and keep the venv outside the repository.
 Linux/macOS:
 
 ```sh
-python3 -m venv ~/.virtualenvs/solidity-sentinel
-source ~/.virtualenvs/solidity-sentinel/bin/activate
+python3 -m venv ~/.virtualenvs/contract-radar
+source ~/.virtualenvs/contract-radar/bin/activate
 python -m pip install -r requirements-dev.lock
 python -m pip install --no-deps -e .
 cp .env.example .env
@@ -65,12 +65,12 @@ python app.py
 Windows PowerShell (no activation-policy changes required):
 
 ```powershell
-python -m venv "$env:LOCALAPPDATA\SoliditySentinel\venv"
-$sentinelPython = "$env:LOCALAPPDATA\SoliditySentinel\venv\Scripts\python.exe"
-& $sentinelPython -m pip install -r requirements-dev.lock
-& $sentinelPython -m pip install --no-deps -e .
+python -m venv "$env:LOCALAPPDATA\ContractRadar\venv"
+$radarPython = "$env:LOCALAPPDATA\ContractRadar\venv\Scripts\python.exe"
+& $radarPython -m pip install -r requirements-dev.lock
+& $radarPython -m pip install --no-deps -e .
 Copy-Item .env.example .env
-& $sentinelPython app.py
+& $radarPython app.py
 ```
 
 The development server binds to `127.0.0.1:5000`, with debug disabled by default. First-use compiler installation needs HTTPS; installation and the whole scan have deadlines. Activated environments use their own `.solc-select` cache; otherwise the cache is in the user's home directory. Old compiler binaries vary by OS. Docker's Linux target is the preferred deployment path.
@@ -97,13 +97,13 @@ OpenAPI: **[/api/v1/openapi.json](http://localhost:5000/api/v1/openapi.json)**. 
 ### CLI and CI
 
 ```sh
-sentinel scan samples/TxOrigin.sol --format json
-sentinel scan samples/TxOrigin.sol --format sarif --output sentinel.sarif --fail-on high
-sentinel scan path/to/project.zip --format md
-sentinel scan path/to/source-directory --format json
+contract-radar scan samples/TxOrigin.sol --format json
+contract-radar scan samples/TxOrigin.sol --format sarif --output contract_radar.sarif --fail-on high
+contract-radar scan path/to/project.zip --format md
+contract-radar scan path/to/source-directory --format json
 ```
 
-Equivalent: `python -m sentinel.cli scan ...`. On Windows without activation, use `& $sentinelPython -m sentinel.cli scan ...`.
+Equivalent: `python -m contract_radar.cli scan ...`. On Windows without activation, use `& $radarPython -m contract_radar.cli scan ...`.
 
 Exit codes: **0** completed below the selected threshold; **1** completed with a finding at/above `--fail-on`; **2** invalid input, compilation failure, timeout, or engine failure. Output still contains the result when a threshold fails.
 
@@ -131,7 +131,7 @@ flowchart LR
     R --> O[JSON / SARIF / Markdown / PDF]
 ```
 
-`sentinel/scanner` is framework-independent. Services own uploads/jobs/persistence/export; blueprints own web/API transport. Typed dataclasses define boundaries. Native CLI output and semantic facts currently require two compilation passes per unit. Deployment uses one application process with a bounded pool; a lock protects its data directory.
+`contract_radar/scanner` is framework-independent. Services own uploads/jobs/persistence/export; blueprints own web/API transport. Typed dataclasses define boundaries. Native CLI output and semantic facts currently require two compilation passes per unit. Deployment uses one application process with a bounded pool; a lock protects its data directory.
 
 Read [ARCHITECTURE](docs/ARCHITECTURE.md), [baseline ANALYSIS](docs/ANALYSIS.md), [DETECTORS](docs/DETECTORS.md), and [HARDENING](docs/HARDENING.md).
 
@@ -199,6 +199,8 @@ make lock
 ```
 
 Without Make, use commands in [CONTRIBUTING](CONTRIBUTING.md). CI checks Python 3.11/3.12, Ruff, mypy, coverage, real samples, Docker build/health, and a safe CLI scan. Lock regeneration: `python scripts/lock.py`; review dependency and expected-result changes together.
+
+The package is `contract_radar`, the command is `contract-radar`, and configuration uses `CONTRACT_RADAR_*`. Existing installations should reinstall the package and update environment variable names. Set `CONTRACT_RADAR_DATA_DIR` to your existing data directory to retain local reports. Stable detector IDs (`SS-001` through `SS-011`) remain unchanged.
 
 ## Configuration and security
 

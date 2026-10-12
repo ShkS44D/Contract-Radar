@@ -2,9 +2,9 @@
 
 import pytest
 
-from sentinel import create_app
-from sentinel.scanner.models import Confidence, Finding, ScanResult, ScanState, Severity
-from sentinel.scanner.scoring import apply_score
+from contract_radar import create_app
+from contract_radar.scanner.models import Confidence, Finding, ScanResult, ScanState, Severity
+from contract_radar.scanner.scoring import apply_score
 
 
 def fake_scan(root, scan_id, filename, config=None):
@@ -51,7 +51,7 @@ def app(tmp_path):
         }
     )
     yield application
-    application.extensions["sentinel_jobs"].shutdown()
+    application.extensions["contract_radar_jobs"].shutdown()
 
 
 @pytest.fixture

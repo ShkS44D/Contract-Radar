@@ -4,7 +4,7 @@ from dataclasses import replace
 
 import pytest
 
-from sentinel.scanner.detectors import (
+from contract_radar.scanner.detectors import (
     DETECTORS,
     BlacklistDetector,
     DelegatecallDetector,
@@ -21,9 +21,9 @@ from sentinel.scanner.detectors import (
     identifier_words,
     run_detectors,
 )
-from sentinel.scanner.facts import AnalysisFacts, FunctionFact, NodeFact
-from sentinel.scanner.models import Confidence, Finding, Severity
-from sentinel.scanner.source import Source
+from contract_radar.scanner.facts import AnalysisFacts, FunctionFact, NodeFact
+from contract_radar.scanner.models import Confidence, Finding, Severity
+from contract_radar.scanner.source import Source
 
 SOURCES = {
     "A.sol": Source("A.sol", "pragma solidity ^0.8.0;\ncontract A {\nfunction f() public {}\n}\n")
@@ -152,7 +152,7 @@ def test_dedup_retains_provenance_and_distinct_occurrences():
     found = deduplicate([broad, narrow, narrow, distinct])
     assert len(found) == 2
     assert found[0].line_start == 3
-    assert found[0].provenance == ["sentinel", "slither"]
+    assert found[0].provenance == ["contract_radar", "slither"]
 
 
 def test_facts_roundtrip():

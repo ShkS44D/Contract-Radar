@@ -7,13 +7,18 @@ from unittest.mock import patch
 
 import pytest
 
-from sentinel.config import ScannerConfig
-from sentinel.scanner.compiler import CompileError, pragma_specs, resolve_units
-from sentinel.scanner.engine import scan_project, scanner_environment
-from sentinel.scanner.models import ScanResult, ScanState
-from sentinel.scanner.parser import ReportError, validate_report
-from sentinel.scanner.process import OutputLimitError, ProcessResult, ProcessTimeout, run_process
-from sentinel.scanner.source import Source, mask_source
+from contract_radar.config import ScannerConfig
+from contract_radar.scanner.compiler import CompileError, pragma_specs, resolve_units
+from contract_radar.scanner.engine import scan_project, scanner_environment
+from contract_radar.scanner.models import ScanResult, ScanState
+from contract_radar.scanner.parser import ReportError, validate_report
+from contract_radar.scanner.process import (
+    OutputLimitError,
+    ProcessResult,
+    ProcessTimeout,
+    run_process,
+)
+from contract_radar.scanner.source import Source, mask_source
 
 
 def test_mask_preserves_lines_and_escaped_strings():
@@ -100,7 +105,7 @@ def test_compile_report_failure():
 )
 def test_engine_failure_states(tmp_path, error, state):
     (tmp_path / "A.sol").write_text("pragma solidity ^0.8.0; contract A {}")
-    with patch("sentinel.scanner.engine.ensure_compiler", side_effect=error):
+    with patch("contract_radar.scanner.engine.ensure_compiler", side_effect=error):
         result = scan_project(tmp_path, "id", "A.sol")
     assert result.state == state
     assert result.score is None and result.grade is None
@@ -110,8 +115,10 @@ def test_engine_failure_states(tmp_path, error, state):
 def test_engine_missing_output(tmp_path):
     (tmp_path / "A.sol").write_text("contract A {}")
     with (
-        patch("sentinel.scanner.engine.ensure_compiler"),
-        patch("sentinel.scanner.engine.run_process", return_value=ProcessResult(1, "", "failed")),
+        patch("contract_radar.scanner.engine.ensure_compiler"),
+        patch(
+            "contract_radar.scanner.engine.run_process", return_value=ProcessResult(1, "", "failed")
+        ),
     ):
         result = scan_project(tmp_path, "id", "A.sol")
     assert result.state == ScanState.ENGINE_ERROR
@@ -129,16 +136,16 @@ def test_engine_success(tmp_path):
                 {
                     "success": True,
                     "results": {"detectors": []},
-                    "sentinel_metadata": {"slither_version": "test"},
-                    "sentinel_facts": {"functions": [], "contracts": ["A.sol:A"]},
+                    "contract_radar_metadata": {"slither_version": "test"},
+                    "contract_radar_facts": {"functions": [], "contracts": ["A.sol:A"]},
                 }
             )
         )
         return ProcessResult(0, "", "")
 
     with (
-        patch("sentinel.scanner.engine.ensure_compiler"),
-        patch("sentinel.scanner.engine.run_process", side_effect=run),
+        patch("contract_radar.scanner.engine.ensure_compiler"),
+        patch("contract_radar.scanner.engine.run_process", side_effect=run),
     ):
         result = scan_project(tmp_path, "id", "A.sol")
     assert result.state == ScanState.COMPLETED
@@ -156,16 +163,16 @@ def test_no_analyzed_declarations_is_not_clean(tmp_path):
                 {
                     "success": True,
                     "results": {"detectors": []},
-                    "sentinel_metadata": {"slither_version": "test"},
-                    "sentinel_facts": {"functions": [], "contracts": []},
+                    "contract_radar_metadata": {"slither_version": "test"},
+                    "contract_radar_facts": {"functions": [], "contracts": []},
                 }
             )
         )
         return ProcessResult(0, "", "")
 
     with (
-        patch("sentinel.scanner.engine.ensure_compiler"),
-        patch("sentinel.scanner.engine.run_process", side_effect=run),
+        patch("contract_radar.scanner.engine.ensure_compiler"),
+        patch("contract_radar.scanner.engine.run_process", side_effect=run),
     ):
         result = scan_project(tmp_path, "id", "A.sol")
     assert result.state == ScanState.COMPILE_ERROR and result.score is None

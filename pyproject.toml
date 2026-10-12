@@ -3,7 +3,7 @@ requires = ["setuptools==80.9.0"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "solidity-sentinel"
+name = "contract-radar"
 version = "2.0.0"
 description = "Evidence-first Solidity static analysis for web, API, and CI"
 readme = "README.md"
@@ -18,8 +18,8 @@ dependencies = [
 ]
 
 [project.urls]
-Repository = "https://github.com/ShkS44D/Solidity-Sentinel"
-Issues = "https://github.com/ShkS44D/Solidity-Sentinel/issues"
+Repository = "https://github.com/ShkS44D/Contract-Radar"
+Issues = "https://github.com/ShkS44D/Contract-Radar/issues"
 
 [project.optional-dependencies]
 dev = ["pytest==9.1.1", "pytest-cov==7.1.0", "ruff==0.17.0", "mypy==2.4.0", "jsonschema==4.26.0", "pip-tools==7.6.2", "pypdf==6.20.0"]
@@ -27,13 +27,13 @@ qa = ["playwright==1.63.0", "PyMuPDF==1.28.2"]
 production = ["gunicorn==23.0.0"]
 
 [project.scripts]
-sentinel = "sentinel.cli:main"
+contract-radar = "contract_radar.cli:main"
 
 [tool.setuptools.packages.find]
-include = ["sentinel*"]
+include = ["contract_radar*"]
 
 [tool.setuptools.package-data]
-sentinel = ["templates/*.html", "static/css/*.css", "static/js/*.js", "static/images/*.svg"]
+contract_radar = ["templates/*.html", "static/css/*.css", "static/js/*.js", "static/images/*.svg"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -41,7 +41,7 @@ addopts = "-ra"
 markers = ["integration: requires installed Solidity compiler and Slither"]
 
 [tool.coverage.run]
-source = ["sentinel.scanner"]
+source = ["contract_radar.scanner"]
 
 [tool.coverage.report]
 fail_under = 80
@@ -57,12 +57,12 @@ ignore = ["E501"]
 
 [tool.mypy]
 python_version = "3.11"
-files = ["sentinel/scanner"]
+files = ["contract_radar/scanner"]
 strict = true
 ignore_missing_imports = true
 
 [[tool.mypy.overrides]]
-module = "sentinel.scanner.worker"
+module = "contract_radar.scanner.worker"
 disallow_untyped_defs = false
 disallow_untyped_calls = false
 disallow_any_generics = false

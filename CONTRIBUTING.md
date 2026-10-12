@@ -9,17 +9,17 @@ Create an external Python 3.11/3.12 venv using README instructions:
 ```sh
 python -m pip install -r requirements-dev.lock
 python -m pip install --no-deps -e .
-python -m ruff check sentinel tests scripts app.py
-python -m ruff format --check sentinel tests scripts app.py
+python -m ruff check contract_radar tests scripts app.py
+python -m ruff format --check contract_radar tests scripts app.py
 python -m mypy
-python -m pytest --cov=sentinel.scanner --cov-report=term-missing
-SENTINEL_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q
+python -m pytest --cov=contract_radar.scanner --cov-report=term-missing
+CONTRACT_RADAR_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q
 docker compose config --quiet
 docker compose build
 docker compose up -d --wait
 ```
 
-PowerShell: set `$env:SENTINEL_RUN_INTEGRATION='1'` before pytest and remove it afterward. Without activation, invoke your external venv's Python. Gunicorn is used only in the Linux container; Windows development uses `app.py`.
+PowerShell: set `$env:CONTRACT_RADAR_RUN_INTEGRATION='1'` before pytest and remove it afterward. Without activation, invoke your external venv's Python. Gunicorn is used only in the Linux container; Windows development uses `app.py`.
 
 Coverage minimum is 80% of the scanner, including the adapter. Real integrations require binaries and possibly HTTPS downloads. Explain checks you could not run; configuration validation is not Docker/CI runtime verification. UI changes need real upload/error flows, filters/search/details, exports, desktop/mobile/keyboard checks, and healthy console/CSP. PDF changes need rendered inspection of every page.
 

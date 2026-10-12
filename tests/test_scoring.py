@@ -4,8 +4,8 @@ from dataclasses import replace
 
 import pytest
 
-from sentinel.scanner.models import Confidence, Finding, ScanResult, ScanState, Severity
-from sentinel.scanner.scoring import apply_score
+from contract_radar.scanner.models import Confidence, Finding, ScanResult, ScanState, Severity
+from contract_radar.scanner.scoring import apply_score
 
 
 def finding(severity=Severity.HIGH, confidence=Confidence.HIGH, rule="rule", line=1):

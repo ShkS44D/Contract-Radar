@@ -6,9 +6,9 @@ The v2.x line is supported. v1's unreliable failure handling makes it unsuitable
 
 ## Reporting
 
-Use [GitHub private vulnerability reporting](https://github.com/ShkS44D/Solidity-Sentinel/security/advisories/new) if enabled. The maintainer must enable it before inviting private reports. Do not publish secrets, confidential source, or weaponized exploits in public issues. If private reporting is unavailable, request a private contact method without disclosing vulnerability details.
+Use [GitHub private vulnerability reporting](https://github.com/ShkS44D/Contract-Radar/security/advisories/new) if enabled. The maintainer must enable it before inviting private reports. Do not publish secrets, confidential source, or weaponized exploits in public issues. If private reporting is unavailable, request a private contact method without disclosing vulnerability details.
 
-Include version/commit, environment, minimal non-confidential reproduction, impact, expected behavior, and any mitigation. Distinguish vulnerabilities in Sentinel from findings in uploaded contracts. No guaranteed SLA or bug bounty is offered.
+Include version/commit, environment, minimal non-confidential reproduction, impact, expected behavior, and any mitigation. Distinguish vulnerabilities in Contract Radar from findings in uploaded contracts. No guaranteed SLA or bug bounty is offered.
 
 ## Boundaries
 

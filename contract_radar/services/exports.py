@@ -9,8 +9,8 @@ from html import escape
 from typing import Any
 from urllib.parse import quote
 
-from sentinel import __version__
-from sentinel.scanner.models import ScanResult, Severity
+from contract_radar import __version__
+from contract_radar.scanner.models import ScanResult, Severity
 
 
 def to_json(result: ScanResult) -> bytes:
@@ -25,9 +25,9 @@ def to_sarif(result: ScanResult) -> bytes:
     run = {
         "tool": {
             "driver": {
-                "name": "Solidity Sentinel",
+                "name": "Contract Radar",
                 "version": __version__,
-                "informationUri": "https://github.com/ShkS44D/Solidity-Sentinel",
+                "informationUri": "https://github.com/ShkS44D/Contract-Radar",
                 "rules": [
                     {
                         "id": rule,
@@ -71,7 +71,7 @@ def to_sarif(result: ScanResult) -> bytes:
                 if f.severity in {Severity.MEDIUM, Severity.LOW}
                 else "note",
                 "message": {"text": f.description + "\nFix: " + f.remediation},
-                "partialFingerprints": {"sentinel/v1": f.id},
+                "partialFingerprints": {"contract-radar/v1": f.id},
                 "locations": [
                     {
                         "physicalLocation": {
@@ -103,7 +103,7 @@ def to_sarif(result: ScanResult) -> bytes:
 def to_markdown(result: ScanResult) -> bytes:
     """Export a readable report without executable raw HTML."""
     lines = [
-        "# Solidity Sentinel scan report",
+        "# Contract Radar scan report",
         "",
         f"File: {escape(result.filename)}",
         f"State: {result.state.value}",
@@ -195,7 +195,7 @@ def to_pdf(result: ScanResult) -> bytes:
     styles["Title"].alignment = TA_LEFT
     styles["BodyText"].leading = 14
     story = [
-        Paragraph("Solidity Sentinel", styles["Title"]),
+        Paragraph("Contract Radar", styles["Title"]),
         Paragraph("Static analysis report", styles["Heading2"]),
         Paragraph(pdf_text(result.filename), styles["BodyText"]),
         Spacer(1, 16),
@@ -284,7 +284,7 @@ def to_pdf(result: ScanResult) -> bytes:
 
     def footer(canvas: Any, doc: Any) -> None:
         canvas.setFont("Helvetica", 8)
-        canvas.drawString(42, 25, "Solidity Sentinel | " + result.scan_id)
+        canvas.drawString(42, 25, "Contract Radar | " + result.scan_id)
         canvas.drawRightString(553, 25, str(doc.page))
 
     SimpleDocTemplate(
@@ -293,8 +293,8 @@ def to_pdf(result: ScanResult) -> bytes:
         leftMargin=42,
         topMargin=42,
         bottomMargin=42,
-        title="Solidity Sentinel scan report",
-        author="Solidity Sentinel",
+        title="Contract Radar scan report",
+        author="Contract Radar",
     ).build(story, onFirstPage=footer, onLaterPages=footer)
     return stream.getvalue()
 

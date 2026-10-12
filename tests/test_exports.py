@@ -5,9 +5,9 @@ import json
 
 from pypdf import PdfReader
 
-from sentinel.scanner.models import Confidence, Finding, ScanResult, ScanState, Severity
-from sentinel.scanner.scoring import apply_score
-from sentinel.services.exports import to_markdown, to_pdf, to_sarif
+from contract_radar.scanner.models import Confidence, Finding, ScanResult, ScanState, Severity
+from contract_radar.scanner.scoring import apply_score
+from contract_radar.services.exports import to_markdown, to_pdf, to_sarif
 
 
 def test_pdf_text_and_pagination_roundtrip():
@@ -39,6 +39,7 @@ def test_pdf_text_and_pagination_roundtrip():
     )
     reader = PdfReader(io.BytesIO(to_pdf(result)))
     text = "\n".join(page.extract_text() for page in reader.pages)
+    assert "Contract Radar" in text
     assert len(reader.pages) > 1
     assert "Issue 0" in text and "Issue 9" in text
     assert "Concrete fix" in text and "1970-01-01 00:00 UTC" in text
@@ -47,4 +48,6 @@ def test_pdf_text_and_pagination_roundtrip():
     markdown = to_markdown(result).decode()
     assert "[SWC-104]" in markdown and "&lt;script&gt;" in markdown
     sarif = json.loads(to_sarif(result))
-    assert sarif["runs"][0]["results"][0]["partialFingerprints"]["sentinel/v1"] == findings[0].id
+    assert (
+        sarif["runs"][0]["results"][0]["partialFingerprints"]["contract-radar/v1"] == findings[0].id
+    )

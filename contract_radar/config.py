@@ -23,10 +23,10 @@ class ScannerConfig:
     def from_env(cls) -> ScannerConfig:
         """Build scanner policy from explicit environment values."""
         return cls(
-            timeout=float(os.getenv("SENTINEL_SCAN_TIMEOUT", "120")),
-            compiler_timeout=float(os.getenv("SENTINEL_COMPILER_TIMEOUT", "120")),
-            default_compiler=os.getenv("SENTINEL_DEFAULT_COMPILER", "0.8.30"),
-            offline=os.getenv("SENTINEL_OFFLINE", "false").lower() == "true",
+            timeout=float(os.getenv("CONTRACT_RADAR_SCAN_TIMEOUT", "120")),
+            compiler_timeout=float(os.getenv("CONTRACT_RADAR_COMPILER_TIMEOUT", "120")),
+            default_compiler=os.getenv("CONTRACT_RADAR_DEFAULT_COMPILER", "0.8.30"),
+            offline=os.getenv("CONTRACT_RADAR_OFFLINE", "false").lower() == "true",
             cache=Path(
                 os.getenv(
                     "SOLC_SELECT_DIR",
