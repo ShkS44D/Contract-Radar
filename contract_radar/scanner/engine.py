@@ -48,7 +48,11 @@ def scanner_environment(config: ScannerConfig) -> dict[str, str]:
     if config.cache.name != ".solc-select":
         raise ValueError("Compiler cache must be named .solc-select")
     env["VIRTUAL_ENV"] = str(config.cache.resolve().parent)
-    env["PYTHONPATH"] = str(Path(__file__).resolve().parents[2])
+    # Vercel adds packaged dependencies to sys.path rather than the interpreter's
+    # site-packages. Children need those trusted runtime paths as well as our package.
+    paths = [str(Path(__file__).resolve().parents[2])]
+    paths.extend(str(Path(path).resolve()) for path in sys.path if path and Path(path).is_dir())
+    env["PYTHONPATH"] = os.pathsep.join(dict.fromkeys(paths))
     env["PYTHONIOENCODING"] = "utf-8"
     return env
 
