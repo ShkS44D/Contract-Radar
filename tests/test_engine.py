@@ -233,3 +233,18 @@ def test_missing_offline_compiler_has_no_side_effects(tmp_path):
     with pytest.raises(CompileError, match="offline mode"):
         ensure_compiler("0.8.30", cache=cache, env={}, timeout=1, offline=True)
     assert not cache.exists()
+
+
+def test_worker_can_import_runtime_packaged_dependencies(tmp_path, monkeypatch):
+    vendor = tmp_path / "vendor"
+    vendor.mkdir()
+    (vendor / "radar_vendor_probe.py").write_text("VALUE = 42")
+    monkeypatch.setattr(sys, "path", [*sys.path, str(vendor)])
+    environment = scanner_environment(ScannerConfig())
+    result = run_process(
+        [sys.executable, "-c", "import radar_vendor_probe; print(radar_vendor_probe.VALUE)"],
+        cwd=tmp_path,
+        env=environment,
+        timeout=5,
+    )
+    assert result.returncode == 0 and result.stdout.strip() == "42"
