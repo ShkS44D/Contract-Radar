@@ -63,7 +63,9 @@ def configure_security(app: Flask) -> None:
         )
         response.headers["X-Frame-Options"] = "DENY"
         response.headers["X-Content-Type-Options"] = "nosniff"
-        response.headers["Referrer-Policy"] = "no-referrer"
+        # HTTPS CSRF validation needs same-origin Referer headers. Report URLs
+        # still never leak through Referer on links to external sites.
+        response.headers["Referrer-Policy"] = "same-origin"
         response.headers["Permissions-Policy"] = "camera=(), microphone=(), geolocation=()"
         if not request.path.startswith("/static/"):
             response.headers["Cache-Control"] = "no-store"

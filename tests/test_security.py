@@ -174,7 +174,7 @@ def test_csrf_and_security_headers(tmp_path):
         assert response.headers["X-Frame-Options"] == "DENY"
         assert response.headers["X-Content-Type-Options"] == "nosniff"
         assert response.headers["Cache-Control"] == "no-store"
-        assert response.headers["Referrer-Policy"] == "no-referrer"
+        assert response.headers["Referrer-Policy"] == "same-origin"
         assert (
             client.post(
                 "/api/v1/scan",
@@ -182,6 +182,54 @@ def test_csrf_and_security_headers(tmp_path):
                 data={"contract": (io.BytesIO(SOURCE), "A.sol")},
             ).status_code
             == 403
+        )
+    finally:
+        app.extensions["contract_radar_jobs"].shutdown()
+
+
+def test_https_csrf_upload_requires_token_and_same_origin_referrer(tmp_path):
+    from conftest import fake_scan
+
+    app = create_app(
+        {
+            "TESTING": True,
+            "DATA_DIR": tmp_path,
+            "SCAN_FUNCTION": fake_scan,
+            "RATELIMIT_ENABLED": False,
+            "SESSION_COOKIE_SECURE": True,
+        }
+    )
+    try:
+        client = app.test_client()
+        base = "https://radar.example"
+        page = client.get("/", base_url=base)
+        assert page.headers["Referrer-Policy"] == "same-origin"
+        token = re.search(rb'name="csrf_token" value="([^"]+)"', page.data)[1].decode()
+        for referrer in [None, "https://foreign.example/"]:
+            response = client.post(
+                "/",
+                base_url=base,
+                headers={"Referer": referrer} if referrer else {},
+                data={"csrf_token": token, "contract": (io.BytesIO(SOURCE), "A.sol")},
+            )
+            assert response.status_code == 400
+        assert (
+            client.post(
+                "/",
+                base_url=base,
+                headers={"Referer": base + "/"},
+                data={"contract": (io.BytesIO(SOURCE), "A.sol")},
+            ).status_code
+            == 400
+        )
+        assert (
+            client.post(
+                "/",
+                base_url=base,
+                headers={"Referer": base + "/"},
+                data={"csrf_token": token, "contract": (io.BytesIO(SOURCE), "A.sol")},
+            ).status_code
+            == 303
         )
     finally:
         app.extensions["contract_radar_jobs"].shutdown()

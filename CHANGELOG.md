@@ -18,6 +18,8 @@
 
 ### Fixed
 
+- HTTPS browser uploads preserve the same-origin referrer required by CSRF validation; cross-origin referrers remain suppressed.
+
 - Failed/absent engine output cannot become an empty scored success.
 - Comments, strings, coffee/feed, and mere keyword presence no longer drive custom vulnerability claims.
 - Upload collisions, Windows line-number drift, duplicate penalties, and silent cleanup errors.
