@@ -6,7 +6,7 @@ ENV PATH="/opt/venv/bin:$PATH" \
     PYTHONDONTWRITEBYTECODE=1
 WORKDIR /build
 RUN python -m venv /opt/venv
-COPY requirements.lock pyproject.toml README.md ./
+COPY requirements.lock pyproject.toml README.md LICENSE ./
 RUN pip install --no-cache-dir -r requirements.lock
 COPY sentinel ./sentinel
 RUN pip install --no-cache-dir --no-deps . \

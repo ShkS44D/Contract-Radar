@@ -1,5 +1,0 @@
-Flask
-slither-analyzer
-Werkzeug
-solc-select
-xhtml2pdf

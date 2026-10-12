@@ -17,8 +17,12 @@ Date: 2026-10-12. Environment: Windows, Python 3.12.10, pinned Slither 0.11.6 an
 | PDF | Rendered and visually inspected all pages; pypdf verifies pagination/text/links; unsupported Unicode is preserved as escapes |
 | SARIF | Completed and failed output validated against the official OASIS 2.1.0 schema |
 | Compose configuration | `docker compose config --quiet` passed |
+| Packaging | Wheel built successfully with templates/static assets, CLI entry point, and MIT license; no upload/report/venv data included |
+| Final smoke check | Fresh app.py startup, real upload/search/filter/export/mobile and broken-source page passed; real high-finding CLI returned 1; safe CLI returned 0 |
+| Documentation links | All rendered local Markdown links/images resolve; screenshot/GIF instructions remain explicit placeholders |
 | Docker build/runtime | **Not verified:** Docker Desktop start was attempted, but no Linux daemon pipe appeared; `docker compose build` failed before building |
 | GitHub Actions | Configured, **not yet run remotely**; requires pushing the branch/commits |
+| Local legacy-folder removal | Automatic approval review blocked recursive deletion of `venv/` and `reports/`, including exact-path commands. They were never tracked and remain ignored; manual deletion is required. |
 
 The in-app browser attach timed out. Playwright Chromium was used as the fallback. `docs/design/report-concept.png` and the latest rendered report were inspected via view_image at the same desktop dimensions. The fidelity ledger in `docs/design/README.md` records layout/color/control/source-detail comparisons and intentional dynamic-content differences. Final screenshots/PDF previews used for QA were kept outside the repository.
 

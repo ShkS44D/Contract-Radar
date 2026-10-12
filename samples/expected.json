@@ -1,7 +1,7 @@
 {
   "engine": "slither-analyzer 0.11.6",
   "compiler": "0.8.30",
-  "policy": "Required rules must be present; forbidden rules absent. Incidental informational/style findings may vary. Full observed rule lists are recorded after verification.",
+  "policy": "Required rules must be present; forbidden rules absent. Incidental informational/style findings may vary. All required/forbidden expectations were verified with the pinned engine/compiler.",
   "samples": {
     "Reentrancy.sol": {"required": ["slither/reentrancy-eth"], "forbidden": ["SS-008"]},
     "TxOrigin.sol": {"required": ["SS-006"], "forbidden": []},

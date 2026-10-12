@@ -17,6 +17,10 @@ dependencies = [
   "reportlab==5.0.1", "python-dotenv==1.2.4",
 ]
 
+[project.urls]
+Repository = "https://github.com/ShkS44D/Solidity-Sentinel"
+Issues = "https://github.com/ShkS44D/Solidity-Sentinel/issues"
+
 [project.optional-dependencies]
 dev = ["pytest==9.1.1", "pytest-cov==7.1.0", "ruff==0.17.0", "mypy==2.4.0", "jsonschema==4.26.0", "pip-tools==7.6.2", "pypdf==6.20.0"]
 qa = ["playwright==1.63.0", "PyMuPDF==1.28.2"]

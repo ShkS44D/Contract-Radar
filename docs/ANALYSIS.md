@@ -1,6 +1,6 @@
 # Solidity Sentinel: baseline analysis and v2.0.0 rebuild plan
 
-Date: 2026-10-12. Status: analysis complete; implementation awaits approval.
+Date: 2026-10-12. Status: approved baseline analysis, retained as the v1 snapshot. The rebuild and verification are recorded in CHANGELOG.md and docs/VERIFICATION.md.
 
 ## 1. Scope and evidence
 

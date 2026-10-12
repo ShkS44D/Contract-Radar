@@ -20,6 +20,8 @@ Most custom rules have medium confidence; selfdestruct operation presence has hi
 
 Slither's native detectors also run. Known equivalents (tx-origin, unchecked-lowlevel, suicidal, controlled-delegatecall) use canonical custom IDs and overlapping source ranges are merged with retained provenance. Native rules retain `slither/<check>` IDs. Unknown impacts/confidence or missing source locations fail validation rather than silently becoming informational.
 
+Generic owner-power findings defer to more specific mint/fee/list rules for the same function, preventing duplicate capability penalties. Distinct sensitive implementation writes remain reportable. Function counts exclude constructors/modifiers; modifier nodes remain available as evidence.
+
 Selfdestruct descriptions follow EIP-6780: it still transfers Ether, while deletion normally requires execution in the creation transaction after Cancun. See https://eips.ethereum.org/EIPS/eip-6780.
 
 To add a detector: subclass `Detector` in `sentinel/scanner/detectors.py`, declare all metadata, implement `matches` over facts (or override `detect` for source-level checks), register it in `DETECTORS`, add positive/negative unit tests and a real compiler sample, then update this table and curated taxonomy/equivalence mappings. Never infer vulnerability solely from a function name.
