@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block title %}{{ result.filename }} · Solidity Sentinel{% endblock %}
+{% block content %}
+<h1>Scan report</h1>
+<p class="filename">{{ result.filename }}</p>
+<section class="report-band" aria-label="Observed-risk score and scan metadata">
+  <div class="score-block">
+    <div class="gauge" aria-label="Observed-risk score {{ result.score }} out of 100">
+      <svg viewBox="0 0 140 140" aria-hidden="true"><circle class="gauge-track" cx="70" cy="70" r="58"/><circle class="gauge-value" cx="70" cy="70" r="58" pathLength="100" stroke-dasharray="{{ result.score }} 100"/></svg>
+      <div class="gauge-label"><strong>{{ result.score }}</strong><span>/100</span></div>
+    </div>
+    <div class="grade-block"><span class="muted">Grade</span><strong>{{ result.grade }}</strong><span class="risk {{ 'risk-high' if result.risk in ['High', 'Very high', 'Critical'] else '' }}">{{ result.risk }} risk</span></div>
+  </div>
+  <dl class="scan-meta">
+    <div><dt>Compiler</dt><dd>{% for entry, version in result.metadata.get('compilers', {}).items() %}<span title="{{ entry }}">{{ version }}</span>{% if not loop.last %}, {% endif %}{% endfor %}</dd></div>
+    <div><dt>Slither</dt><dd>{{ result.metadata.get('slither_version', 'Unknown') }}</dd></div>
+    <div><dt>Duration</dt><dd>{{ result.metadata.get('duration_seconds', 0) }}s</dd></div>
+    <div><dt>SLOC</dt><dd>{{ result.metadata.get('sloc', 0) }}</dd></div>
+    <div><dt>Contracts</dt><dd>{{ result.metadata.get('contract_count', 0) }}</dd></div>
+    <div><dt>Functions</dt><dd>{{ result.metadata.get('function_count', 0) }}</dd></div>
+  </dl>
+</section>
+{% if result.metadata.get('warnings') %}<aside class="warnings"><strong>Scan warnings</strong>{% for warning in result.metadata.warnings %}<p>{{ warning }}</p>{% endfor %}</aside>{% endif %}
+<div class="filter-bar">
+  <div class="severity-filters" role="group" aria-label="Filter by severity">
+    <button class="filter active" data-severity="all" aria-pressed="true">All <span>{{ result.findings|length }}</span></button>
+    {% for severity, count in summary.items() %}<button class="filter" data-severity="{{ severity }}" aria-pressed="false">{{ severity|capitalize }} <span>{{ count }}</span></button>{% endfor %}
+  </div>
+  <label class="search-box"><span class="sr-only">Search findings</span><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="10" r="7"/><path d="m15 15 6 6"/></svg><input id="finding-search" type="search" placeholder="Search findings…"></label>
+</div>
+<div class="section-header"><h2>Findings ({{ result.findings|length }})</h2><nav aria-label="Export report"><span class="muted">Export:</span>{% for format, label in [('json','JSON'),('sarif','SARIF'),('md','Markdown'),('pdf','PDF')] %}<a href="{{ url_for('web.export', scan_id=result.scan_id, format=format) }}">{{ label }}</a>{% endfor %}</nav></div>
+<section id="findings-list" aria-label="Detailed findings">
+{% for finding in result.findings %}
+  <details class="finding" data-severity="{{ finding.severity.value }}" {% if loop.first %}open{% endif %}>
+    <summary><svg class="chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m8 4 8 8-8 8"/></svg><span class="badge {{ finding.severity.value }}">{{ finding.severity.value|capitalize }}</span><strong>{{ finding.title }}</strong><span class="finding-location">{{ finding.rule_id }} <span class="separator">|</span> {{ finding.file }}:{{ finding.line_start }}-{{ finding.line_end }}</span></summary>
+    <div class="finding-body">
+      <div class="finding-explanation"><h3>Description</h3><p>{{ finding.description }}</p><h3>Remediation</h3><p>{{ finding.remediation }}</p><h3>Evidence</h3><p class="muted">{{ finding.confidence.value|capitalize }} confidence · {{ finding.provenance|join(', ') }}</p>
+        {% if finding.swc or finding.cwe %}<h3>References</h3><div class="references">{% if finding.swc %}<a href="https://swcregistry.io/docs/SWC-{{ finding.swc }}/" target="_blank" rel="noopener noreferrer">SWC-{{ finding.swc }}</a>{% endif %}{% if finding.cwe %}<a href="https://cwe.mitre.org/data/definitions/{{ finding.cwe }}.html" target="_blank" rel="noopener noreferrer">CWE-{{ finding.cwe }}</a>{% endif %}</div>{% endif %}
+      </div>
+      <div class="code-context"><h3>Code context ({{ finding.file }})</h3><pre><code>{% for line in finding.snippet.splitlines() %}{% set number = finding.snippet_start + loop.index0 %}<span class="code-line {{ 'highlight-line' if finding.line_start <= number <= finding.line_end else '' }}"><span class="line-number">{{ number }}</span>{{ line }}</span>{% endfor %}</code></pre></div>
+    </div>
+  </details>
+{% endfor %}
+<p id="no-results" class="empty-state" {% if result.findings %}hidden{% endif %}>No matching findings. A clean static scan does not establish contract safety.</p>
+</section>
+<details class="breakdown"><summary>How this score was calculated</summary><p>Severity × confidence, diminishing returns within each issue type, and a cap per type. Informational and gas findings do not deduct points. Grade summarizes observed findings; material findings set a minimum risk label.</p><div class="table-scroll"><table><thead><tr><th>Issue type</th><th>Instances</th><th>Penalty</th><th>Cap</th></tr></thead><tbody>{% for group in result.breakdown %}<tr><td>{{ group.rule_id }}</td><td>{{ group.instances }}</td><td>{{ group.penalty }}</td><td>{{ group.cap }}</td></tr>{% endfor %}</tbody></table></div><p class="muted">Formula version {{ result.metadata.get('scoring_version') }}. Read docs/SCORING.md for the complete formula.</p></details>
+{% endblock %}

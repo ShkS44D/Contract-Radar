@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block title %}{{ title }} · Solidity Sentinel{% endblock %}
+{% block content %}
+<section class="state-page">
+  <h1>{{ title }}</h1>
+  <p class="intro">{{ message }}</p>
+  {% if result is defined %}
+    <p class="filename">{{ result.filename }} · <strong>{{ result.state.value }}</strong></p>
+    <details class="finding" open><summary>Scanner diagnostics</summary><pre class="diagnostics">{{ result.diagnostics }}</pre></details>
+    <p><a href="{{ url_for('web.export', scan_id=result.scan_id, format='json') }}">Download failure details (JSON)</a></p>
+  {% endif %}
+  <a class="button primary" href="{{ url_for('web.index') }}">Try another scan</a>
+</section>
+{% endblock %}

@@ -346,7 +346,9 @@ def run_detectors(sources: dict[str, Source], facts: AnalysisFacts) -> list[Find
 def deduplicate(findings: list[Finding]) -> list[Finding]:
     """Merge equivalent overlapping locations while retaining the narrowest evidence."""
     merged: list[Finding] = []
-    for finding in sorted(findings, key=lambda f: (f.line_end - f.line_start, f.id)):
+    for finding in sorted(
+        findings, key=lambda f: (f.line_end - f.line_start, "sentinel" not in f.provenance, f.id)
+    ):
         existing = next(
             (
                 f

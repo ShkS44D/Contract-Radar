@@ -9,3 +9,11 @@ The scanner is independent of Flask. Typed `Finding` and `ScanResult` dataclasse
 The whole scan has one deadline, including installation; the installation timeout is additionally capped. States are queued, running, completed, compile_error, timeout, and engine_error. Failed scans discard partial findings and remain unscored.
 
 Initial verification: range/import/masking tests, malformed/missing reports, secret filtering, real subprocess deadlines/output limits, and mocked success/failure states. Real Slither integration is checked separately against installed compiler versions.
+
+## Application boundaries
+
+The app factory registers browser and API blueprints. Upload preparation produces a UUID source directory and random physical filename for single uploads. The engine restores the logical filename before fingerprinting, making source identity stable across scans. UTF-8 text is normalized to LF to preserve compiler/source line agreement on Windows.
+
+The bounded thread pool admits at most workers + queue_size jobs. Each job runs the scanner subprocess group and cleans its source directory on completion or failure. SQLite stores JSON-serialized normalized results atomically, preserves original expiry during updates, and marks interrupted jobs as engine_error on startup. Deployment is intentionally single-process; multiple independent app pools against the same database are unsupported.
+
+Browser POST redirects with 303 to `/report/<uuid>`. The report route selects loading/error/completed templates. Polling uses the API state; no estimated percentage is invented. Report exports and CLI use shared serialization/export services. All source in HTML is Jinja-escaped and Markdown export escapes HTML. SARIF carries executionSuccessful=false for failed scans. PDF uses ReportLab's controlled paginated layout.

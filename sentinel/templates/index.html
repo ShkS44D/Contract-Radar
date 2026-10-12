@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block content %}
+<section class="upload-page">
+  <h1>Understand your contract’s risk.</h1>
+  <p class="intro">Compiler-backed Solidity analysis. Clear evidence. Practical fixes.</p>
+  <form method="post" enctype="multipart/form-data" class="upload-form">
+    {% if csrf_token is defined %}<input type="hidden" name="csrf_token" value="{{ csrf_token() }}">{% endif %}
+    <div id="drop-area" class="upload-box">
+      <svg class="upload-icon" viewBox="0 0 48 48" aria-hidden="true"><path d="M24 32V8m-9 9 9-9 9 9M9 30v9h30v-9"/></svg>
+      <label for="file-input">Choose a Solidity file or ZIP project</label>
+      <p id="file-label" aria-live="polite">Drag and drop, or browse your files.</p>
+      <input id="file-input" type="file" name="contract" accept=".sol,.zip" required>
+      <p class="muted">Up to {{ (config.MAX_CONTENT_LENGTH / 1048576)|int }} MiB per request. ZIPs must contain Solidity sources only.</p>
+    </div>
+    <button type="submit" class="button primary scan-button">Initiate scan <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h15m-6-6 6 6-6 6"/></svg></button>
+  </form>
+  <p class="upload-note">Sources are isolated and deleted after analysis. Reports expire after {{ config.RETENTION_HOURS|int }} hours. Keep report links private.</p>
+</section>
+{% endblock %}

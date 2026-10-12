@@ -91,6 +91,19 @@ def collect_facts(entry: str) -> AnalysisFacts:
 def main() -> int:
     """Write a Slither envelope and fail explicitly on CLI errors."""
     entry, output = sys.argv[1:3]
+    from crytic_compile.platform.exceptions import InvalidCompilation
+    from slither.exceptions import SlitherError
+
+    try:
+        facts = collect_facts(entry)
+    except InvalidCompilation as exc:
+        Path(output).write_text(json.dumps({"success": False, "error": str(exc)}), encoding="utf-8")
+        return 2
+    except SlitherError as exc:
+        if not str(exc).startswith("Invalid compilation:"):
+            raise
+        Path(output).write_text(json.dumps({"success": False, "error": str(exc)}), encoding="utf-8")
+        return 2
     completed = subprocess.run(
         [
             sys.executable,
@@ -114,7 +127,7 @@ def main() -> int:
         "exit_code": completed.returncode,
     }
     if data.get("success") and completed.returncode == 0:
-        data["sentinel_facts"] = asdict(collect_facts(entry))
+        data["sentinel_facts"] = asdict(facts)
     path.write_text(json.dumps(data), encoding="utf-8")
     return completed.returncode
 

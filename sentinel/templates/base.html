@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}Solidity Sentinel{% endblock %}</title>
+  <link rel="icon" href="{{ url_for('static', filename='images/favicon.svg') }}" type="image/svg+xml">
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+  <script src="{{ url_for('static', filename='js/app.js') }}" defer></script>
+</head>
+<body>
+  <a class="skip-link" href="#main">Skip to content</a>
+  <header class="site-header">
+    <div class="header-inner">
+      <a href="{{ url_for('web.index') }}" class="brand"><svg viewBox="0 0 32 36" aria-hidden="true"><path d="M16 2 29 7v11c0 7-6 12-13 16C9 30 3 25 3 18V7Z"/><path d="m10 17 4 4 8-9"/></svg><span>Solidity Sentinel</span></a>
+      <a class="button primary small" href="{{ url_for('web.index') }}">New scan</a>
+    </div>
+  </header>
+  <main id="main" class="container">{% block content %}{% endblock %}</main>
+  <footer class="container">Static analysis is not a replacement for a manual audit.<span>Solidity Sentinel · v2.0.0</span></footer>
+</body>
+</html>

@@ -113,6 +113,14 @@ def scan_project(
                 facts.contracts.extend(unit_facts.contracts)
                 result.metadata["slither_version"] = data["sentinel_metadata"]["slither_version"]
         result.findings = deduplicate(result.findings + run_detectors(sources, facts))
+        if len(sources) == 1 and filename.lower().endswith(".sol"):
+            # Keep source identity stable despite random physical upload filenames.
+            for finding in result.findings:
+                finding.description = finding.description.replace(finding.file, filename)
+                finding.file = filename
+                finding.id = ""
+                finding.__post_init__()
+            result.metadata["compilers"] = {filename: units[0].compiler}
         result.metadata["contract_count"] = len(set(facts.contracts))
         result.metadata["function_count"] = len(
             {(f.file, f.name, f.start, f.end) for f in facts.functions if not f.constructor}
@@ -131,7 +139,8 @@ def scan_project(
         logger.exception("Scan %s failed", scan_id)
     if result.state != ScanState.COMPLETED:
         result.findings = []
-    if result.state != ScanState.COMPLETED:
+        result.score = result.grade = result.risk = None
+        result.breakdown = []
         result.diagnostics = (
             (result.diagnostics + "\n" + diagnostic).strip().replace(str(root), "<project>")[:6000]
         )

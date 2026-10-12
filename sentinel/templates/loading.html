@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+{% block title %}Scanning · Solidity Sentinel{% endblock %}
+{% block content %}
+<section class="state-page" id="scan-progress" data-status-url="{{ url_for('api.read_scan', scan_id=result.scan_id) }}">
+  <div class="spinner" aria-hidden="true"></div>
+  <h1>Analyzing your contract</h1>
+  <p class="filename">{{ result.filename }}</p>
+  <p id="scan-status" role="status">{{ result.state.value|capitalize }}. Resolving the compiler and running static analysis.</p>
+  <p class="muted">Compiler setup can take longer on the first scan. You can keep this report link and return later.</p>
+  <button id="retry-status" class="button secondary" hidden>Retry status check</button>
+</section>
+{% endblock %}
