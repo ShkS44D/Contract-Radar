@@ -1,0 +1,65 @@
+[build-system]
+requires = ["setuptools==80.9.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "solidity-sentinel"
+version = "2.0.0"
+description = "Evidence-first Solidity static analysis for web, API, and CI"
+readme = "README.md"
+requires-python = ">=3.11"
+license = "MIT"
+authors = [{name = "S44D"}]
+dependencies = [
+  "Flask==3.1.3", "Flask-WTF==1.3.0", "Flask-Limiter==4.1.1",
+  "slither-analyzer==0.11.6", "solc-select==1.2.0",
+  "semantic-version==2.10.0", "filelock==4.1.1",
+  "reportlab==5.0.1", "python-dotenv==1.2.4",
+]
+
+[project.optional-dependencies]
+dev = ["pytest==9.1.1", "pytest-cov==7.1.0", "ruff==0.17.0", "mypy==2.4.0", "jsonschema==4.26.0", "pip-tools==7.6.2"]
+production = ["gunicorn==23.0.0; sys_platform != 'win32'"]
+
+[project.scripts]
+sentinel = "sentinel.cli:main"
+
+[tool.setuptools.packages.find]
+include = ["sentinel*"]
+
+[tool.setuptools.package-data]
+sentinel = ["templates/*.html", "static/css/*.css", "static/js/*.js", "static/images/*.svg"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
+markers = ["integration: requires installed Solidity compiler and Slither"]
+
+[tool.coverage.run]
+source = ["sentinel.scanner"]
+omit = ["*/worker.py"]
+
+[tool.coverage.report]
+fail_under = 80
+show_missing = true
+
+[tool.ruff]
+target-version = "py311"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B"]
+ignore = ["E501"]
+
+[tool.mypy]
+python_version = "3.11"
+files = ["sentinel/scanner"]
+strict = true
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "sentinel.scanner.worker"
+disallow_untyped_defs = false
+disallow_untyped_calls = false
+disallow_any_generics = false
+warn_return_any = false
