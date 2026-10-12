@@ -144,5 +144,19 @@ def scan_project(
         result.diagnostics = (
             (result.diagnostics + "\n" + diagnostic).strip().replace(str(root), "<project>")[:6000]
         )
+        for private in sorted(
+            {
+                str(Path.home()),
+                str(config.cache),
+                sys.prefix,
+                sys.base_prefix,
+                str(Path(__file__).resolve().parents[2]),
+            },
+            key=len,
+            reverse=True,
+        ):
+            result.diagnostics = result.diagnostics.replace(private, "<runtime>").replace(
+                private.replace("\\", "/"), "<runtime>"
+            )
     result.metadata["duration_seconds"] = round(time.monotonic() - started, 3)
     return result

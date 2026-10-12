@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import atexit
 import logging
 import shutil
 import threading
@@ -9,6 +10,9 @@ import uuid
 from collections.abc import Callable
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
+
+from filelock import FileLock
+from filelock import Timeout as LockTimeout
 
 from sentinel.config import ScannerConfig
 from sentinel.scanner.engine import scan_project
@@ -35,11 +39,41 @@ class JobService:
         scan: Callable[..., ScanResult] = scan_project,
     ):
         self.store = store
+        self.lock = FileLock(str(store.path.parent / "worker.lock"))
+        try:
+            self.lock.acquire(timeout=0)
+        except LockTimeout as exc:
+            raise RuntimeError(
+                "Only one application process may use a Sentinel data directory"
+            ) from exc
         self.config = config
         self.scan = scan
         self.pool = ThreadPoolExecutor(max_workers=workers, thread_name_prefix="sentinel")
         self.capacity = threading.BoundedSemaphore(workers + queue_size)
         self.store.recover()
+        self.temp_root = self.store.path.parent / "temp"
+        if self.temp_root.exists():
+            for path in self.temp_root.iterdir():
+                if path.is_dir() and not path.is_symlink():
+                    try:
+                        uuid.UUID(path.name)
+                    except ValueError:
+                        continue
+                    if path.resolve().parent == self.temp_root.resolve():
+                        shutil.rmtree(path)
+        self.stop = threading.Event()
+        self.maintenance = threading.Thread(
+            target=self._maintain, name="sentinel-retention", daemon=True
+        )
+        self.maintenance.start()
+        atexit.register(self.shutdown)
+
+    def _maintain(self) -> None:
+        while not self.stop.wait(60):
+            try:
+                self.store.cleanup()
+            except Exception:
+                logger.exception("Retention cleanup failed")
 
     def submit(self, root: Path, filename: str) -> ScanResult:
         """Accept a prepared project, or clean it up when the queue is full."""
@@ -60,7 +94,9 @@ class JobService:
         try:
             result.state = ScanState.RUNNING
             self.store.save(result)
+            submitted = result.metadata["submitted_at"]
             result = self.scan(root, result.scan_id, result.filename, self.config)
+            result.metadata["submitted_at"] = submitted
             self.store.save(result)
         except Exception:
             logger.exception("Background scan %s failed", result.scan_id)
@@ -77,4 +113,9 @@ class JobService:
 
     def shutdown(self) -> None:
         """Wait for admitted jobs before shutting down the application."""
+        self.stop.set()
         self.pool.shutdown(wait=True)
+        self.maintenance.join(timeout=2)
+        if self.lock.is_locked:
+            self.lock.release()
+        atexit.unregister(self.shutdown)

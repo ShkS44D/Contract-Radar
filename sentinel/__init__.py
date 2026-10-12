@@ -38,6 +38,9 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
         RETENTION_HOURS=float(os.getenv("SENTINEL_RETENTION_HOURS", "24")),
         WORKERS=int(os.getenv("SENTINEL_WORKERS", "2")),
         QUEUE_SIZE=int(os.getenv("SENTINEL_QUEUE_SIZE", "4")),
+        SCAN_RATE_LIMIT=os.getenv("SENTINEL_RATE_LIMIT", "10 per minute"),
+        MAX_FORM_PARTS=10,
+        MAX_FORM_MEMORY_SIZE=64 * 1024,
         SESSION_COOKIE_HTTPONLY=True,
         SESSION_COOKIE_SAMESITE="Lax",
         SESSION_COOKIE_SECURE=os.getenv("SENTINEL_COOKIE_SECURE", "false").lower() == "true",
@@ -75,6 +78,9 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
 
     app.register_blueprint(web)
     app.register_blueprint(api)
+    from sentinel.security import configure_security
+
+    configure_security(app)
 
     @app.errorhandler(HTTPException)
     def http_error(error: HTTPException) -> ResponseReturnValue:
@@ -89,5 +95,20 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
     @app.get("/health")
     def health() -> ResponseReturnValue:
         return jsonify(status="ok", version=__version__)
+
+    @app.errorhandler(Exception)
+    def unexpected_error(error: Exception) -> ResponseReturnValue:
+        app.logger.exception("Unhandled application error")
+        if request.path.startswith("/api/"):
+            return jsonify(
+                error="Internal server error", message="The request could not be completed."
+            ), 500
+        from flask import render_template
+
+        return render_template(
+            "error.html",
+            title="Request failed",
+            message="The request could not be completed. Check application logs.",
+        ), 500
 
     return app

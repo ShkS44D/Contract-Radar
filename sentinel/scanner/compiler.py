@@ -5,6 +5,7 @@ from __future__ import annotations
 import os
 import re
 import sys
+import time
 from dataclasses import dataclass
 from pathlib import Path, PurePosixPath
 
@@ -116,6 +117,7 @@ def ensure_compiler(
 ) -> None:
     """Install a compiler once without mutating solc-select's global selection."""
     cache.mkdir(parents=True, exist_ok=True)
+    started = time.monotonic()
     with FileLock(str(cache / "install.lock"), timeout=max(0.1, timeout)):
         artifact = cache / "artifacts" / f"solc-{version}" / f"solc-{version}"
         if artifact.is_file():
@@ -126,7 +128,7 @@ def ensure_compiler(
             [sys.executable, "-m", "solc_select", "install", version],
             cwd=cache,
             env=env,
-            timeout=timeout,
+            timeout=max(0.01, timeout - (time.monotonic() - started)),
         )
         if result.returncode or not artifact.is_file():
             raise CompileError(

@@ -5,6 +5,8 @@ from __future__ import annotations
 import json
 import sqlite3
 import time
+from collections.abc import Iterator
+from contextlib import contextmanager
 from pathlib import Path
 
 from sentinel.scanner.models import ScanResult, ScanState
@@ -16,20 +18,28 @@ class ResultStore:
     def __init__(self, path: Path, retention_hours: float = 24):
         self.path = path
         self.retention = retention_hours * 3600
-        path.parent.mkdir(parents=True, exist_ok=True)
+        path.parent.mkdir(parents=True, exist_ok=True, mode=0o700)
         with self.connect() as connection:
             connection.execute("PRAGMA journal_mode=WAL")
             connection.execute(
                 "CREATE TABLE IF NOT EXISTS scans (id TEXT PRIMARY KEY, payload TEXT NOT NULL, created REAL NOT NULL, expires REAL NOT NULL)"
             )
+        self.path.chmod(0o600)
 
-    def connect(self) -> sqlite3.Connection:
+    @contextmanager
+    def connect(self) -> Iterator[sqlite3.Connection]:
         """Open a short-lived connection suitable for request and worker threads."""
-        return sqlite3.connect(self.path, timeout=10)
+        connection = sqlite3.connect(self.path, timeout=10)
+        connection.execute("PRAGMA secure_delete=ON")
+        try:
+            with connection:
+                yield connection
+        finally:
+            connection.close()
 
     def save(self, result: ScanResult) -> None:
         """Atomically insert/update a report while preserving its original expiry."""
-        now = time.time()
+        now = float(result.metadata.setdefault("submitted_at", time.time()))
         with self.connect() as connection:
             connection.execute(
                 "INSERT INTO scans VALUES (?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET payload=excluded.payload",
