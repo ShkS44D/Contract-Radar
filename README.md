@@ -49,7 +49,7 @@ Set `CONTRACT_RADAR_OFFLINE=true` to disable compiler downloads. Other pragma ra
 
 ## Deploy on Vercel
 
-[Live deployment](https://contract-radar-security.vercel.app) · Access currently follows the Vercel project’s login-protection settings.
+[Live deployment](https://contract-radar-security.vercel.app) Â· Access currently follows the Vercel projectâ€™s login-protection settings.
 
 A Docker-free Vercel entrypoint uses request-bound scans, bundled compilers, and private expiring Redis reports. See [deployment instructions and hosted limits](docs/DEPLOYMENT.md). Local/Docker mode keeps the asynchronous worker.
 

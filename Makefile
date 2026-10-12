@@ -11,6 +11,7 @@ test:
 integration:
 	CONTRACT_RADAR_RUN_INTEGRATION=1 $(PYTHON) -m pytest tests/test_integration.py -q
 lint:
+	$(PYTHON) scripts/check_encoding.py
 	$(PYTHON) -m ruff check contract_radar tests scripts app.py vercel_app.py
 	$(PYTHON) -m ruff format --check contract_radar tests scripts app.py vercel_app.py
 	$(PYTHON) -m mypy

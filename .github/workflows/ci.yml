@@ -17,6 +17,7 @@ jobs:
           python-version: ${{ matrix.python }}
           cache: pip
           cache-dependency-path: requirements-dev.lock
+      - run: python scripts/check_encoding.py
       - run: python -m pip install -r requirements-dev.lock
       - run: python -m pip install --no-deps -e .
       - run: python -m ruff check contract_radar tests scripts app.py vercel_app.py
