@@ -210,3 +210,26 @@ def test_real_subprocess_deadline_and_output_limit(tmp_path):
         [sys.executable, "-c", "print('ok')"], cwd=tmp_path, env=dict(os.environ), timeout=5
     )
     assert result.returncode == 0 and result.stdout.strip() == "ok"
+
+
+def test_bundled_offline_compiler_needs_no_writes(tmp_path):
+    from contract_radar.scanner.compiler import ensure_compiler
+
+    cache = tmp_path / ".solc-select"
+    artifact = cache / "artifacts/solc-0.8.30/solc-0.8.30"
+    artifact.parent.mkdir(parents=True)
+    artifact.write_bytes(b"test-binary")
+    with patch(
+        "contract_radar.scanner.compiler.FileLock", side_effect=AssertionError("Read-only bundle")
+    ):
+        ensure_compiler("0.8.30", cache=cache, env={}, timeout=1, offline=True)
+    assert not (cache / "install.lock").exists()
+
+
+def test_missing_offline_compiler_has_no_side_effects(tmp_path):
+    from contract_radar.scanner.compiler import ensure_compiler
+
+    cache = tmp_path / ".solc-select"
+    with pytest.raises(CompileError, match="offline mode"):
+        ensure_compiler("0.8.30", cache=cache, env={}, timeout=1, offline=True)
+    assert not cache.exists()

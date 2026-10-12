@@ -84,7 +84,16 @@ def scan_project(
                 timeout=min(config.compiler_timeout, remaining),
                 offline=config.offline,
             )
-            child_env = dict(env, SOLC_VERSION=unit.compiler)
+            child_env = dict(
+                env,
+                SOLC_VERSION=unit.compiler,
+                CONTRACT_RADAR_SOLC=str(
+                    config.cache.resolve()
+                    / "artifacts"
+                    / f"solc-{unit.compiler}"
+                    / f"solc-{unit.compiler}"
+                ),
+            )
             with tempfile.TemporaryDirectory(prefix="contract_radar-engine-") as temporary:
                 output = Path(temporary) / "slither.json"
                 remaining = deadline - time.monotonic()

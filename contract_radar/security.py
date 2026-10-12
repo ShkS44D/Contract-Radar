@@ -47,6 +47,15 @@ def configure_security(app: Flask) -> None:
             if request.headers.get("Sec-Fetch-Site") == "cross-site":
                 abort(403, description="Cross-site browser API uploads are not allowed")
 
+        if (
+            app.config["EXECUTION_MODE"] == "request"
+            and request.method == "POST"
+            and request.path in {"/", "/api/v1/scan"}
+        ):
+            store = app.extensions["contract_radar_store"]
+            if not store.admit_client(get_remote_address()):
+                abort(429, description="Hosted scans are limited to 10 submissions per minute")
+
     @app.after_request
     def headers(response: Response) -> Response:
         response.headers["Content-Security-Policy"] = (

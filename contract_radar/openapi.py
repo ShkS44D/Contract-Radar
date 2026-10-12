@@ -24,6 +24,14 @@ SPEC = {
                     },
                 },
                 "responses": {
+                    "200": {
+                        "description": "Vercel request mode: terminal report after analysis",
+                        "content": {
+                            "application/json": {
+                                "schema": {"$ref": "#/components/schemas/ScanResult"}
+                            }
+                        },
+                    },
                     "202": {
                         "description": "Queued; Location is the polling URL",
                         "content": {

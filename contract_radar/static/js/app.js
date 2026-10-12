@@ -51,6 +51,15 @@ filters.forEach(button => button.addEventListener("click", () => {
 }));
 if (search) search.addEventListener("input", updateFindings);
 const progress = document.querySelector("#scan-progress");
+const uploadForm = document.querySelector(".upload-form");
+if (uploadForm) {
+  uploadForm.addEventListener("submit", () => {
+    const button = uploadForm.querySelector(".scan-button");
+    button.disabled = true;
+    button.textContent = "Scanning… please keep this page open.";
+    uploadForm.setAttribute("aria-busy", "true");
+  });
+}
 if (progress) {
   const status = document.querySelector("#scan-status");
   const retry = document.querySelector("#retry-status");

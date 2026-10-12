@@ -21,3 +21,13 @@ output/
 
 # Legacy local scan data remains private during migration.
 .sentinel/
+
+.vercel
+.env*
+
+public/static/
+deployment/compiler-cache/
+!.env.example
+
+.agents/
+skills-lock.json

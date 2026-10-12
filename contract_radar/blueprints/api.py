@@ -1,6 +1,6 @@
 """Versioned multipart scan API and machine-readable OpenAPI contract."""
 
-from flask import Blueprint, jsonify, url_for
+from flask import Blueprint, current_app, jsonify, url_for
 from flask.typing import ResponseReturnValue
 
 from .common import get_result, submit_upload
@@ -19,7 +19,7 @@ def create_scan() -> ResponseReturnValue:
             status_url=status_url,
             report_url=url_for("web.report", scan_id=result.scan_id),
         ),
-        202,
+        200 if current_app.config["EXECUTION_MODE"] == "request" else 202,
         {"Location": status_url, "Retry-After": "2"},
     )
 

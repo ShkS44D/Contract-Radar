@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import importlib.metadata
 import json
+import os
 import re
 import subprocess
 import sys
@@ -20,7 +21,8 @@ def collect_facts(entry: str) -> AnalysisFacts:
     from slither.slither import Slither
     from slither.slithir.operations import LowLevelCall, SolidityCall
 
-    slither = Slither(entry, compile_force_framework="solc")
+    kwargs = {"solc": os.environ["CONTRACT_RADAR_SOLC"]} if os.getenv("CONTRACT_RADAR_SOLC") else {}
+    slither = Slither(entry, compile_force_framework="solc", **kwargs)
     root = Path.cwd().resolve()
     facts = AnalysisFacts()
     seen = set()
@@ -117,6 +119,11 @@ def main() -> int:
             "--fail-none",
             "--compile-force-framework",
             "solc",
+            *(
+                ["--solc", os.environ["CONTRACT_RADAR_SOLC"]]
+                if os.getenv("CONTRACT_RADAR_SOLC")
+                else []
+            ),
         ],
         check=False,
     )

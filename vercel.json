@@ -1,0 +1,15 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "framework": "flask",
+  "regions": ["iad1"],
+  "functions": {
+    "vercel_app.py": {
+      "maxDuration": 300,
+      "includeFiles": "deployment/compiler-cache/**"
+    }
+  },
+  "headers": [{
+    "source": "/static/(.*)",
+    "headers": [{"key": "X-Content-Type-Options", "value": "nosniff"}]
+  }]
+}

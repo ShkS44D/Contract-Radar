@@ -29,6 +29,12 @@ production = ["gunicorn==23.0.0"]
 [project.scripts]
 contract-radar = "contract_radar.cli:main"
 
+[tool.vercel]
+entrypoint = "vercel_app:app"
+
+[tool.vercel.scripts]
+build = "python scripts/build_vercel.py"
+
 [tool.setuptools.packages.find]
 include = ["contract_radar*"]
 

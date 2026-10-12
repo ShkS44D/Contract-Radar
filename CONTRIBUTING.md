@@ -9,8 +9,8 @@ Create an external Python 3.11/3.12 venv using README instructions:
 ```sh
 python -m pip install -r requirements-dev.lock
 python -m pip install --no-deps -e .
-python -m ruff check contract_radar tests scripts app.py
-python -m ruff format --check contract_radar tests scripts app.py
+python -m ruff check contract_radar tests scripts app.py vercel_app.py
+python -m ruff format --check contract_radar tests scripts app.py vercel_app.py
 python -m mypy
 python -m pytest --cov=contract_radar.scanner --cov-report=term-missing
 CONTRACT_RADAR_RUN_INTEGRATION=1 python -m pytest tests/test_integration.py -q

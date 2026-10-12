@@ -4,6 +4,8 @@
 
 ### Added
 
+- Docker-free Vercel deployment adapter with bundled compilers, request-bound execution, private Redis report TTLs, shared admission, and serverless lifecycle tests.
+
 - Typed package/app factory, environment config, blueprints, and shared scanner/service models.
 - Import/pragma compiler resolution, bounded installation, per-process compiler choice, deadlines, and process-tree cleanup.
 - Eleven custom detectors with precise evidence, confidence, remediation, provenance, and curated taxonomy.

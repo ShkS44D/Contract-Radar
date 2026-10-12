@@ -116,6 +116,11 @@ def ensure_compiler(
     version: str, *, cache: Path, env: dict[str, str], timeout: float, offline: bool
 ) -> None:
     """Install a compiler once without mutating solc-select's global selection."""
+    artifact = cache / "artifacts" / f"solc-{version}" / f"solc-{version}"
+    if offline and artifact.is_file():
+        return
+    if offline:
+        raise CompileError(f"Compiler {version} is unavailable in offline mode")
     cache.mkdir(parents=True, exist_ok=True)
     started = time.monotonic()
     with FileLock(str(cache / "install.lock"), timeout=max(0.1, timeout)):

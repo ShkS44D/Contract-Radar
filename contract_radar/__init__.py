@@ -22,16 +22,25 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
 
     from contract_radar.config import ScannerConfig
     from contract_radar.services.jobs import JobService
+    from contract_radar.services.serverless import RedisResultStore, RequestScanService
     from contract_radar.services.storage import ResultStore
     from contract_radar.services.uploads import UploadPolicy
 
     load_dotenv()
     app = Flask(__name__)
+    hosted = os.getenv("VERCEL") == "1"
     production = os.getenv("CONTRACT_RADAR_ENV", "development") == "production"
     app.config.from_mapping(
         SECRET_KEY=os.getenv("SECRET_KEY") or (None if production else secrets.token_hex(32)),
         DEBUG=os.getenv("CONTRACT_RADAR_DEBUG", "false").lower() == "true" and not production,
-        DATA_DIR=Path(os.getenv("CONTRACT_RADAR_DATA_DIR", ".contract-radar")).resolve(),
+        DATA_DIR=Path(
+            os.getenv(
+                "CONTRACT_RADAR_DATA_DIR", "/tmp/contract-radar" if hosted else ".contract-radar"
+            )
+        ).resolve(),
+        EXECUTION_MODE=os.getenv(
+            "CONTRACT_RADAR_EXECUTION_MODE", "request" if hosted else "background"
+        ),
         MAX_CONTENT_LENGTH=int(os.getenv("CONTRACT_RADAR_MAX_UPLOAD_MB", "2")) * 1024 * 1024,
         MAX_EXTRACTED=int(os.getenv("CONTRACT_RADAR_MAX_EXTRACTED_MB", "8")) * 1024 * 1024,
         MAX_FILES=int(os.getenv("CONTRACT_RADAR_MAX_FILES", "50")),
@@ -57,15 +66,32 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
         raise ValueError("Invalid retention or worker configuration")
     logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(name)s %(message)s")
     data = Path(app.config["DATA_DIR"])
-    store = ResultStore(data / "results.sqlite3", app.config["RETENTION_HOURS"])
     kwargs = {"scan": app.config["SCAN_FUNCTION"]} if "SCAN_FUNCTION" in app.config else {}
-    jobs = JobService(
-        store,
-        app.config.get("SCANNER_CONFIG", ScannerConfig.from_env()),
-        app.config["WORKERS"],
-        app.config["QUEUE_SIZE"],
-        **kwargs,
-    )
+    store: ResultStore | RedisResultStore
+    jobs: JobService | RequestScanService
+    if app.config["EXECUTION_MODE"] == "request":
+        from contract_radar.services.serverless import RedisResultStore, RequestScanService
+
+        store = app.config.get("RESULT_STORE") or RedisResultStore(
+            os.getenv("UPSTASH_REDIS_REST_URL", os.getenv("KV_REST_API_URL", "")),
+            os.getenv("UPSTASH_REDIS_REST_TOKEN", os.getenv("KV_REST_API_TOKEN", "")),
+            app.config["RETENTION_HOURS"],
+        )
+        data.mkdir(parents=True, exist_ok=True, mode=0o700)
+        jobs = RequestScanService(
+            store, app.config.get("SCANNER_CONFIG", ScannerConfig.from_env()), **kwargs
+        )
+    elif app.config["EXECUTION_MODE"] == "background":
+        store = ResultStore(data / "results.sqlite3", app.config["RETENTION_HOURS"])
+        jobs = JobService(
+            store,
+            app.config.get("SCANNER_CONFIG", ScannerConfig.from_env()),
+            app.config["WORKERS"],
+            app.config["QUEUE_SIZE"],
+            **kwargs,
+        )
+    else:
+        raise ValueError("Unknown execution mode")
     app.extensions.update(
         contract_radar_store=store,
         contract_radar_jobs=jobs,
@@ -81,6 +107,16 @@ def create_app(config: dict[str, Any] | None = None) -> "Flask":
     from contract_radar.security import configure_security
 
     configure_security(app)
+
+    from contract_radar.services.serverless import StorageUnavailable
+
+    @app.errorhandler(StorageUnavailable)
+    def storage_error(error: StorageUnavailable) -> ResponseReturnValue:
+        if request.path.startswith("/api/"):
+            return jsonify(error="Service unavailable", message=str(error)), 503
+        from flask import render_template
+
+        return render_template("error.html", title="Service unavailable", message=str(error)), 503
 
     @app.errorhandler(HTTPException)
     def http_error(error: HTTPException) -> ResponseReturnValue:

@@ -21,3 +21,7 @@ The bounded thread pool admits at most workers + queue_size jobs. Each job runs 
 Browser POST redirects with 303 to `/report/<uuid>`. The report route selects loading/error/completed templates. Polling uses the API state; no estimated percentage is invented. Report exports and CLI use shared serialization/export services. All source in HTML is Jinja-escaped and Markdown export escapes HTML. SARIF carries executionSuccessful=false for failed scans. PDF uses ReportLab's controlled paginated layout.
 
 Terminal results are persisted after cleanup; cleanup failures become unscored engine_error reports. A submission timestamp preserves retention if a job outlives its database row. Compiler cache follows the activated environment/home directory and can be overridden with SOLC_SELECT_DIR (a directory named `.solc-select`).
+
+## Vercel adapter
+
+`vercel_app.py` selects `RequestScanService` and `RedisResultStore`. A scan remains within the invocation lifecycle; Redis provides TTL report storage, an atomic shared rate limit, and an owner-checked global admission lease. The Linux build packages compilers; the worker receives an explicit native compiler path. The default entrypoint continues to use the thread pool and SQLite. See [DEPLOYMENT](DEPLOYMENT.md).

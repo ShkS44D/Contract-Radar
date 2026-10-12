@@ -47,6 +47,10 @@ docker compose down             # stop; report data remains in its volume
 
 Set `CONTRACT_RADAR_OFFLINE=true` to disable compiler downloads. Other pragma ranges may need compilers outside the preinstalled set. Container runtime controls remain unverified locally; CI includes an actual build/smoke test.
 
+## Deploy on Vercel
+
+A Docker-free Vercel entrypoint uses request-bound scans, bundled compilers, and private expiring Redis reports. See [deployment instructions and hosted limits](docs/DEPLOYMENT.md). Local/Docker mode keeps the asynchronous worker.
+
 ## Quick start: local Python
 
 Use Python 3.11 or 3.12 and keep the venv outside the repository.

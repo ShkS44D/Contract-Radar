@@ -11,11 +11,11 @@ test:
 integration:
 	CONTRACT_RADAR_RUN_INTEGRATION=1 $(PYTHON) -m pytest tests/test_integration.py -q
 lint:
-	$(PYTHON) -m ruff check contract_radar tests scripts app.py
-	$(PYTHON) -m ruff format --check contract_radar tests scripts app.py
+	$(PYTHON) -m ruff check contract_radar tests scripts app.py vercel_app.py
+	$(PYTHON) -m ruff format --check contract_radar tests scripts app.py vercel_app.py
 	$(PYTHON) -m mypy
 format:
-	$(PYTHON) -m ruff check --fix contract_radar tests scripts app.py
-	$(PYTHON) -m ruff format contract_radar tests scripts app.py
+	$(PYTHON) -m ruff check --fix contract_radar tests scripts app.py vercel_app.py
+	$(PYTHON) -m ruff format contract_radar tests scripts app.py vercel_app.py
 lock:
 	$(PYTHON) scripts/lock.py

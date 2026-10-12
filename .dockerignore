@@ -19,3 +19,6 @@ docs/design
 
 # Legacy local scan data remains private during migration.
 .sentinel/
+
+.agents/
+skills-lock.json

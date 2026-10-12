@@ -18,3 +18,7 @@ contract-radar scan path/to/sources --format md
 ```
 
 CLI exit codes: 0 completed below the selected threshold, 1 completed with findings at/above `--fail-on`, 2 input/engine/compilation/timeout failure. CLI never suppresses engine failures as success. File, ZIP, and source-directory input share validation; unrelated build scripts are not executed.
+
+## Vercel request mode
+
+On Vercel, `POST /api/v1/scan` returns HTTP 200 after analysis with a terminal state. Keep the upload request open. The response still contains report and status URLs; GET/report/export behavior is unchanged. Local background mode returns HTTP 202. Hosted admission/storage outages return 503, limits return 429, and failed scans never receive a score. See [DEPLOYMENT](DEPLOYMENT.md).
