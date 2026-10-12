@@ -27,7 +27,7 @@
 
 - Upload -> report now uses background state/status redirects; `python app.py` remains supported.
 - Prototype/unpinned requirements replaced; historical proposal moved into docs.
-- Green primary accent with original red shield favicon preserved.
+- Green primary accent with matching green shield favicon.
 
 ### Verification limits
 

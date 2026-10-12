@@ -15,7 +15,7 @@ Static analysis is not a replacement for a manual audit. Scores summarize observ
 - Slither's native rules plus 11 custom classes over AST/IR evidence and offset-preserving source analysis.
 - Stable finding fingerprints, severity/confidence, exact line ranges, code context, remediation, and applicable SWC/CWE links.
 - Deduplicated findings and transparent confidence-weighted scoring with diminishing returns, letter grades, and risk labels.
-- Responsive dark/green reports with filters, search, collapsible findings, highlighted lines, metadata, and score breakdowns. The original shield favicon is retained.
+- Responsive dark/green reports with filters, search, collapsible findings, highlighted lines, metadata, and score breakdowns. The favicon matches the green shield branding.
 - JSON, SARIF 2.1.0, Markdown, and paginated PDF exports.
 - Background scanning, bounded admission, status polling, UUID report links, SQLite persistence, and retention.
 - Safe `.sol`/source-only `.zip` uploads, CSRF, rate limits, strict CSP/security headers, and source cleanup.

@@ -11,6 +11,12 @@ from .common import get_result, submit_upload
 web = Blueprint("web", __name__)
 
 
+@web.get("/favicon.ico")
+def favicon() -> ResponseReturnValue:
+    """Serve the brand icon at the conventional browser favicon URL."""
+    return redirect(url_for("static", filename="images/favicon.svg", v="radar-2"))
+
+
 @web.route("/", methods=["GET", "POST"])
 def index() -> ResponseReturnValue:
     """Preserve upload -> report flow while scans run in the background."""
